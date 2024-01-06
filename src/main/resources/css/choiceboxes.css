@@ -1,0 +1,30 @@
+
+.choice-box .context-menu {
+    -fx-background-color: white;
+}
+
+.choice-box .menu-item:focused {
+       -fx-background-color: orange;
+}
+
+.choice-box .menu-item > .label {
+    -fx-text-fill: black;
+    -fx-font-family: "Comic Sans MS";
+    -fx-font-size: 16;
+}
+
+.choice-box .menu-item:focused > .label {
+    -fx-text-fill: white;
+}
+
+.choice-box {
+    -fx-background-color: white;
+    -fx-mark-color: #FF8C00;
+}
+
+.choice-box > .label {
+       -fx-text-fill: black;
+       -fx-font-family: "Comic Sans MS";
+       -fx-font-size: 16;
+       -fx-alignment: center;
+}

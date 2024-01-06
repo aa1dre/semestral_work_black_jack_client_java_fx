@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="vBox" alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.aakhramchuk.clientfx.controllers.LobbyCreationController">
+   <children>
+      <ImageView fitHeight="177.0" fitWidth="104.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Images/lobbyCreation.png" />
+         </image>
+         <VBox.margin>
+            <Insets left="10.0" right="10.0" top="10.0" />
+         </VBox.margin>
+      </ImageView>
+      <Label text="Create Lobby">
+         <font>
+            <Font name="Century Schoolbook Bold" size="35.0" />
+         </font>
+         <VBox.margin>
+            <Insets bottom="10.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin>
+      </Label>
+      <Separator prefWidth="200.0">
+         <VBox.margin>
+            <Insets bottom="5.0" top="5.0" />
+         </VBox.margin>
+      </Separator>
+      <Label contentDisplay="RIGHT" text="lobby name">
+         <graphic>
+            <TextField fx:id="nameTf" prefHeight="30.0" prefWidth="200.0" styleClass="text-field" stylesheets="@../../../css/textfields.css">
+               <font>
+                  <Font name="Century Schoolbook Bold" size="16.0" />
+               </font>
+            </TextField>
+         </graphic>
+         <VBox.margin>
+            <Insets bottom="20.0" left="20.0" right="64.0" top="20.0" />
+         </VBox.margin>
+         <font>
+            <Font name="Century Schoolbook Bold" size="18.0" />
+         </font>
+      </Label>
+      <Label contentDisplay="RIGHT" text="Max count &#10;of players" textOverrun="CLIP" wrapText="true">
+         <graphic>
+            <TextField fx:id="maxCountOfPlayersTf" prefHeight="30.0" prefWidth="200.0" styleClass="text-field" stylesheets="@../../../css/textfields.css">
+               <font>
+                  <Font name="Century Schoolbook Bold" size="16.0" />
+               </font>
+            </TextField>
+         </graphic>
+         <font>
+            <Font name="Century Schoolbook Bold" size="16.0" />
+         </font>
+         <VBox.margin>
+            <Insets bottom="10.0" left="20.0" right="50.0" />
+         </VBox.margin>
+      </Label>
+      <CheckBox fx:id="passwordChbx" mnemonicParsing="false" text="Has password">
+         <font>
+            <Font name="Century Schoolbook Bold" size="18.0" />
+         </font>
+         <VBox.margin>
+            <Insets left="60.0" />
+         </VBox.margin>
+      </CheckBox>
+      <Label fx:id="passwordLbl" contentDisplay="RIGHT" opacity="0.0" text="password">
+         <VBox.margin>
+            <Insets bottom="20.0" right="25.0" top="20.0" />
+         </VBox.margin>
+         <graphic>
+            <PasswordField fx:id="passwordTf" disable="true" prefHeight="30.0" prefWidth="200.0" styleClass="text-field" stylesheets="@../../../css/textfields.css" visible="false">
+               <font>
+                  <Font name="Century Schoolbook Bold" size="16.0" />
+               </font>
+            </PasswordField>
+         </graphic>
+         <font>
+            <Font name="Century Schoolbook Bold" size="18.0" />
+         </font>
+      </Label>
+      <Separator prefWidth="200.0">
+         <VBox.margin>
+            <Insets top="5.0" />
+         </VBox.margin>
+      </Separator>
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Button fx:id="cancelButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#cancelButtonAction" prefHeight="80.0" prefWidth="150.0" styleClass="button-back" stylesheets="@../../../css/buttons.css" text="Cancel">
+               <HBox.margin>
+                  <Insets bottom="15.0" left="10.0" right="45.0" top="15.0" />
+               </HBox.margin>
+               <font>
+                  <Font name="Comic Sans MS Bold" size="26.0" />
+               </font>
+            </Button>
+            <Button fx:id="registrationButtonAction" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#registrationButtonAction" prefHeight="79.0" prefWidth="150.0" styleClass="button-confirm" stylesheets="@../../../css/buttons.css" text="Confirm">
+               <HBox.margin>
+                  <Insets bottom="15.0" left="45.0" right="10.0" top="15.0" />
+               </HBox.margin>
+               <font>
+                  <Font name="Comic Sans MS Bold" size="26.0" />
+               </font>
+            </Button>
+         </children>
+         <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin>
+      </HBox>
+   </children>
+</VBox>

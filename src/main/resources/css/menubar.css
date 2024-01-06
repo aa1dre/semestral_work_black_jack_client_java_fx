@@ -1,0 +1,71 @@
+.menu-bar {
+    -fx-background-color: #412600;
+    -fx-border-color: black;
+    -fx-border-width: 2;
+    -fx-padding: 0px;
+}
+
+.menu-bar:focused {
+    -fx-faint-focus-color: #4d2d00;
+}
+
+.menu-bar .label {
+    -fx-font-size: 20 pt;
+    -fx-font-family: "Comic Sans MS";
+    -fx-text-fill: black;
+}
+
+.menu:hover {
+    -fx-background-color: rgb(77, 45, 0);
+}
+
+.menu .label {
+    -fx-text-fill: black;
+    -fx-alignment: center;
+}
+
+.menu:hover .label {
+    -fx-text-fill: white;
+    -fx-alignment: center;
+}
+
+
+.menu:hover, .menu:showing{
+    -fx-background-color: rgb(77, 45, 0);
+}
+
+
+.menu {
+    -fx-pref-width: 160;
+}
+
+.menu .context-menu {
+    -fx-pref-width: 160;
+}
+
+.menu-item .label {
+    -fx-font-size: 20 pt;
+    -fx-text-fill: black;
+}
+
+.menu-item:hover .label {
+    -fx-background-color: rgb(77, 45, 0);
+    -fx-text-fill: white
+}
+
+.menu-item {
+    -fx-background-color: #412600;
+}
+
+.menu-item:hover {
+    -fx-background-color: rgb(77, 45, 0);
+}
+
+/* Style the context menu itself */
+.context-menu {
+    -fx-background-color: #412600;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-border-color: black; /* or #412600 if you want it to blend in */
+    -fx-border-width: 2px; /* or 2 if you want a border */
+}

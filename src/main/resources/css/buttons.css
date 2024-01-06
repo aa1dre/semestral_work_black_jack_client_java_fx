@@ -1,0 +1,132 @@
+.button {
+    -fx-padding: 8 15 15 15;
+    -fx-background-insets: 0,0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #8B4513 0%, #D2691E 100%),
+            #FF8C00,
+            #FF8C00,
+            radial-gradient(center 50% 50%, radius 100%, #D2691E, #FF8C00);
+    -fx-border-radius: 8;
+    -fx-border-color: #8B4513;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-color: #ffff;
+}
+
+.button:hover {
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #FF8C00 0%, #D2691E 100%),
+            #D2691E,
+            #FF8C00,
+            radial-gradient(center 50% 50%, radius 100%, #FF8C00, #D2691E);
+    -fx-color: #000000;
+}
+
+.button:pressed {
+    -fx-padding: 10 15 13 15;
+    -fx-background-insets: 2 0 0 0,2 0 3 0, 2 0 4 0, 2 0 5 0;
+}
+
+.button:disabled {
+    -fx-background-color: ffb700;
+}
+
+/*
+        BACK-BUTTON
+ */
+
+.button-back {
+    -fx-padding: 8 15 15 15;
+    -fx-background-insets: 0,0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #8B0000 0%, #DC143C 100%),
+            #FF0000,
+            #FF0000,
+            radial-gradient(center 50% 50%, radius 100%, #DC143C, #FF0000);
+    -fx-border-radius: 8;
+    -fx-border-color: #800000;
+    -fx-effect: dropshadow( gaussian , rgba(1.0,0,0,0.35) , 4,0,0,1 );
+    -fx-color: #ffff;
+}
+
+.button-back:hover {
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #FF0000 0%, #DC143C 100%),
+            #DC143C,
+            #FF0000,
+            radial-gradient(center 50% 50%, radius 100%, #FF0000, #DC143C);
+    -fx-color: #000000;
+}
+
+.button-back:pressed {
+    -fx-padding: 10 15 13 15;
+    -fx-background-insets: 2 0 0 0,2 0 3 0, 2 0 4 0, 2 0 5 0;
+}
+
+/*
+        CONFIRM BUTTON
+ */
+
+.button-confirm {
+    -fx-padding: 8 15 15 15;
+    -fx-background-insets: 0,0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #008000 0%, #228B22 100%),
+            #98ED00,
+            #98ED00,
+            radial-gradient(center 50% 50%, radius 100%, #32CD32, #7CFC00);
+    -fx-border-radius: 8;
+    -fx-border-color: #008000;
+    -fx-effect: dropshadow( gaussian , rgba(1.0,0,0,0.35) , 4,0,0,1 );
+    -fx-color: #ffff;
+}
+
+.button-confirm:hover {
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #98ED00 0%, #32CD32 100%),
+            #32CD32,
+            #98ED00,
+            radial-gradient(center 50% 50%, radius 100%, #98ED00, #32CD32);
+    -fx-color: #000000;
+}
+
+button-confirm:pressed {
+    -fx-padding: 10 15 13 15;
+    -fx-background-insets: 2 0 0 0,2 0 3 0, 2 0 4 0, 2 0 5 0;
+}
+
+/*
+        INFO BUTTON
+ */
+
+.button-info {
+    -fx-padding: 8 15 15 15;
+    -fx-background-insets: 0,0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #FF8C00 0%, #FFDF00 100%),
+            #FFD700,
+            #FFD700,
+            radial-gradient(center 50% 50%, radius 100%, #FFA500, #FFD700);
+    -fx-border-radius: 8;
+    -fx-border-color: #FF8C00;
+    -fx-effect: dropshadow( gaussian , rgba(1.0,0,0,0.35) , 4,0,0,1 );
+    -fx-color: #ffff;
+}
+
+.button-info:hover {
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #FFD700 0%, #FFA500 100%),
+            #FFA500,
+            #FFD700,
+            radial-gradient(center 50% 50%, radius 100%, #FFD700, #FFA500);
+    -fx-color: #000000;
+}
+
+.button-info:pressed {
+    -fx-padding: 10 15 13 15;
+    -fx-background-insets: 2 0 0 0,2 0 3 0, 2 0 4 0, 2 0 5 0;
+}
+

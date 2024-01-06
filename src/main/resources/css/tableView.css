@@ -1,0 +1,59 @@
+{
+    -fx-primary-color: #FF8C00;
+    -fx-secondary-color: #FFA500;
+    -fx-grey-color: #b9b9b9;
+
+    -fx-focus-color: -fx-primary-color;
+}
+
+.table-row-cell:selected .text {
+    -fx-fill: white ;
+}
+
+.table-cell:filled:hover {
+    -fx-text-fill: black;
+}
+
+
+.table-cell {
+    -fx-wrap-text: true;
+    -fx-font-family: "Comic Sans MS";
+    -fx-font-size: 18;
+}
+
+.table-view {
+    -fx-accent: -fx-primary-color;
+    -fx-border-color: #5A2906;
+    -fx-border-width: 3px;
+    -fx-padding: 0px;
+    -fx-font-family: "Comic Sans MS";
+    -fx-font-size: 18;
+}
+
+.table-view:focused {
+    -fx-faint-focus-color: #8B4513;
+}
+
+.table-view .table-column {
+    -fx-alignment: CENTER;
+}
+
+.table-view .column-header-background{
+    -fx-background-color: linear-gradient(to bottom, #8B4513, #A0522D);
+    -fx-padding: 0px;
+    -fx-font-family: "Comic Sans MS";
+    -fx-font-size: 18;
+    -fx-border-color: #5A2906;
+    -fx-border-width: 2px;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-padding: 0px;
+}
+
+.table-view .column-header:hover {
+    -fx-background-color: #A0522D;
+}
+
+

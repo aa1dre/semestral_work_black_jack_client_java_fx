@@ -1,0 +1,25 @@
+{
+    -fx-primary-color: #7AC165;
+    -fx-secondary-color: #152E12;
+    -fx-grey-color: #b9b9b9;
+
+    -fx-focus-color: -fx-secondary-color;
+}
+
+.text-field {
+    -fx-accent: -fx-primary-color;
+    -fx-background-color: -fx-grey-color, white;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-border-width: 4px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.text-field-readonly {
+    -fx-highlight-fill: null;
+    -fx-highlight-text-fill: null;
+}
+
+.text-field:focused {
+    -fx-background-color: -fx-primary-color, white;
+}
