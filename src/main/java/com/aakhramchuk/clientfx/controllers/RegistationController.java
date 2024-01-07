@@ -43,7 +43,7 @@ public class RegistationController {
 
     @FXML
     public void cancelBtnAction(ActionEvent event) throws IOException {
-        FxContainer.getCurrentModalWindow().close();
+        FxUtils.closeCurrentModalWindowIfExist();
     }
 
     @FXML
@@ -97,7 +97,7 @@ public class RegistationController {
                     MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.information_about_registration"),
                     MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.information_about_registration"));
             alert.showAndWait();
-            FxContainer.getCurrentModalWindow().close();
+            FxUtils.closeCurrentModalWindowIfExist();
         }
     }
 

@@ -66,6 +66,12 @@ public class FxManager {
         return FxContainer.getCurrentScene();
     }
 
+    public static Scene getLobbyMenuScene() throws IOException {
+        FXMLLoader fxmlMain = new FXMLLoader(BlackJackApplication.class.getResource("lobbyMenu.fxml"));
+        FxContainer.setCurrentScene(new Scene(fxmlMain.load(), FxContainer.getCurrentScene().getWidth(), FxContainer.getCurrentScene().getHeight()));
+        return FxContainer.getCurrentScene();
+    }
+
     public static Scene getLoginScene() throws IOException {
         FXMLLoader fxmlLogin = new FXMLLoader(BlackJackApplication.class.getResource("login.fxml"));
         FxContainer.setCurrentScene(new Scene(fxmlLogin.load(), 800, 500));

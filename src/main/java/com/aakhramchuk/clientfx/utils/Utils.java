@@ -171,9 +171,9 @@ public class Utils {
 
     static Lobby parseLobby(String lobby, boolean inLobby, boolean inGame) {
         String[] userParts = extractUsers(lobby, inLobby, inGame);
-        String adminInfo = parseUserInfo(userParts[0]);
-        String creatorInfo = parseUserInfo(userParts[1]);
-        List<String> usersInLobby = new ArrayList<>();
+        User adminUser = parseUserInfo(userParts[0]);
+        User creatorUser = parseUserInfo(userParts[1]);
+        List<User> usersInLobby = new ArrayList<>();
         List<GamePlayer> gamePlayers = new ArrayList<>();
         String lobbyWithoutUsersAndGameInfo;
         GameObject gameObject = null;
@@ -203,23 +203,34 @@ public class Utils {
         // Вывод информации о лобби
         if (inLobby) {
             if (!inGame) {
-                System.out.println(lobbyId + ". " + lobbyName);
+                /*System.out.println(lobbyId + ". " + lobbyName);
                 System.out.println("max count of players: " + maxPlayers);
                 System.out.println("has password: " + hasPassword);
                 System.out.println("current count of players: " + currentPlayers);
                 System.out.println("admin: " + adminInfo);
                 System.out.println("creator: " + creatorInfo);
-                System.out.println("users in lobby:");
-                for (int i = 0; i < usersInLobby.size(); i++) {
+                System.out.println("users in lobby:");*/
+/*                for (int i = 0; i < usersInLobby.size(); i++) {
                     System.out.println(i + 1 + ". " + usersInLobby.get(i));
-                }
+                }*/
             } else {
                 gameObject = new GameObject(gamePlayers);
                 System.out.println(gameObject);
             }
         }
 
-        Lobby newLobby = new Lobby(Integer.parseInt(lobbyId), lobbyName, Integer.parseInt(maxPlayers), hasPassword, Integer.parseInt(currentPlayers), adminInfo, creatorInfo, gameStarted);
+        Lobby newLobby = new Lobby(Integer.parseInt(lobbyId), lobbyName, Integer.parseInt(maxPlayers), hasPassword, Integer.parseInt(currentPlayers), adminUser != null ? adminUser.toString() : "none", creatorUser != null ? creatorUser.toString() : "none", gameStarted);
+
+        usersInLobby.forEach(user ->{
+            user.setAdmin(user.equals(adminUser));
+
+            user.setCreator(user.equals(creatorUser));
+
+            user.setOnline(false);
+
+            newLobby.addUser(user);
+        });
+
         if (gameObject != null) {
             newLobby.setGameObject(gameObject);
         }
@@ -292,7 +303,6 @@ public class Utils {
 
         String[] currentPlayerStringDetails = currentPlayerString.split(";");
 
-        // Обработка остальных игроков
         for (String playerString : playerStrings) {
             GamePlayer player = parseGamePlayer(playerString);
             if (player.getLogin().equals(currentPlayerStringDetails[0])) {
@@ -364,8 +374,8 @@ public class Utils {
         return player;
     }
 
-    private static List<String> parseUsersInLobby(String usersString) {
-        List<String> users = new ArrayList<>();
+    private static List<User> parseUsersInLobby(String usersString) {
+        List<User> users = new ArrayList<>();
         if (usersString.equals("[]")) {
             return users;
         }
@@ -383,7 +393,10 @@ public class Utils {
             } else if (trimmedUsersString.charAt(i) == ']') {
                 depth--;
                 if (depth == 0) {
-                    users.add(parseUserInfo(trimmedUsersString.substring(start, i + 1)));
+                    User userToAdd = parseUserInfo(trimmedUsersString.substring(start, i + 1));
+                    if (userToAdd != null) {
+                        users.add(userToAdd);
+                    }
                 }
             }
         }
@@ -421,11 +434,11 @@ public class Utils {
         return -1;
     }
 
-    private static String parseUserInfo(String userInfo) {
+    private static User parseUserInfo(String userInfo) {
         if (userInfo.equals("[]")) {
-            return "none";
+            return null;
         }
         String[] userDetails = userInfo.substring(1, userInfo.length() - 1).split(";");
-        return String.join(" - ", userDetails);
+        return new User(userDetails[0], userDetails[1], userDetails[2]);
     }
 }

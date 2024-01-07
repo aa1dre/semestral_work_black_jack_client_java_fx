@@ -1,5 +1,6 @@
 package com.aakhramchuk.clientfx.utils;
 
+import com.aakhramchuk.clientfx.containers.FxContainer;
 import javafx.scene.control.Alert;
 
 public class FxUtils {
@@ -24,4 +25,11 @@ public class FxUtils {
 
         return alert;
     }
+
+    public static void closeCurrentModalWindowIfExist() {
+        if (FxContainer.getCurrentModalWindow() != null) {
+            FxContainer.getCurrentModalWindow().close();
+        }
+    }
+
 }

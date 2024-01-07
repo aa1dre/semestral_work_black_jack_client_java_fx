@@ -68,7 +68,8 @@ public class LoginController {
                 FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
                 FxContainer.getCurrentStage().setScene(FxManager.getMainMenuScene());
             } else if("LOBBY".equals(messageType)) {
-                //startGameLobby();
+                FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
+                FxContainer.getCurrentStage().setScene(FxManager.getLobbyMenuScene());
             } else if ("GAME".equals(messageType)) {
                 //startPlay();
             }

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static com.aakhramchuk.clientfx.objects.Constants.DELETE_LOBBY_OPCODE_CONFIG_VALUE;
+import static com.aakhramchuk.clientfx.objects.Constants.JOIN_LOBBY_OPCODE_CONFIG_VALUE;
 
 public class EnterPasswordController {
     @FXML
@@ -42,7 +43,7 @@ public class EnterPasswordController {
 
     @FXML
     public void cancelButtonAction(ActionEvent event) throws IOException {
-        FxContainer.getCurrentModalWindow().close();
+        FxUtils.closeCurrentModalWindowIfExist();
     }
 
     @FXML
@@ -56,7 +57,7 @@ public class EnterPasswordController {
         }
 
         if (isJoin) {
-
+            ActionUtils.actionLobby(JOIN_LOBBY_OPCODE_CONFIG_VALUE, lobby, passwordTf.getText());
         } else {
             ActionUtils.actionLobby(DELETE_LOBBY_OPCODE_CONFIG_VALUE, lobby, passwordTf.getText());
         }

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.time.LocalTime;
 
 import static com.aakhramchuk.clientfx.objects.Constants.DELETE_LOBBY_OPCODE_CONFIG_VALUE;
+import static com.aakhramchuk.clientfx.objects.Constants.JOIN_LOBBY_OPCODE_CONFIG_VALUE;
 
 public class MainMenuController {
 
@@ -97,8 +98,21 @@ public class MainMenuController {
     }
 
     @FXML
-    public void joinLobbyBtnAction(ActionEvent event) throws IOException {
-        FxContainer.getCurrentModalWindow().close();
+    public void joinLobbyBtnAction(ActionEvent event) throws IOException, InterruptedException {
+        if (lobbyTableSelection == null || lobbyTableSelection.isEmpty() || lobbyTableSelection.getSelectedItem() == null) {
+            Alert alert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
+                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_lobby_join_process"),
+                    MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.error_in_lobby_join_process_select"));
+            alert.showAndWait();
+            return;
+        }
+
+        if (lobbyTableSelection.getSelectedItem().getHasPassword()) {
+            FxManager.createEnterPasswordModalWindow(lobbyTableSelection.getSelectedItem(), true);
+        } else {
+            ActionUtils.actionLobby(JOIN_LOBBY_OPCODE_CONFIG_VALUE, lobbyTableSelection.getSelectedItem(), null);
+        }
+        FxUtils.closeCurrentModalWindowIfExist();
     }
 
     @FXML
@@ -121,7 +135,7 @@ public class MainMenuController {
         } else {
             ActionUtils.actionLobby(DELETE_LOBBY_OPCODE_CONFIG_VALUE, lobbyTableSelection.getSelectedItem(), null);
         }
-        FxContainer.getCurrentModalWindow().close();
+        FxUtils.closeCurrentModalWindowIfExist();
     }
 
     @FXML

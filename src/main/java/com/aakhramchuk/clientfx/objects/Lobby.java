@@ -1,11 +1,14 @@
 package com.aakhramchuk.clientfx.objects;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class Lobby {
     private IntegerProperty idP = new SimpleIntegerProperty();
@@ -15,6 +18,7 @@ public class Lobby {
     private IntegerProperty currentPlayers = new SimpleIntegerProperty();
     private StringProperty adminInfo = new SimpleStringProperty();
     private StringProperty creatorInfo = new SimpleStringProperty();
+    private final ObservableList<User> usersList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
     private BooleanProperty gameStarted = new SimpleBooleanProperty();
     private GameObject gameObject; // Assuming GameObject does not need to be a property.
 
@@ -93,4 +97,18 @@ public class Lobby {
     public boolean hasPassword() {
         return getHasPassword();
     }
+
+
+    public void addUser(User user) {
+        Platform.runLater(() -> usersList.add(user));
+    }
+
+    public void removeUser(User user) {
+        Platform.runLater(() -> usersList.remove(user));
+    }
+
+    public ObservableList<User> getUsersList() {
+        return usersList;
+    }
+
 }

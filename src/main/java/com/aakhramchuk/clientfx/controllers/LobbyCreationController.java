@@ -44,7 +44,7 @@ public class LobbyCreationController {
 
     @FXML
     public void cancelButtonAction(ActionEvent event) throws IOException {
-        FxContainer.getCurrentModalWindow().close();
+        FxUtils.closeCurrentModalWindowIfExist();
     }
 
     @FXML
@@ -76,7 +76,7 @@ public class LobbyCreationController {
         }
 
         if (ActionUtils.createLobby(nameTf.getText(), Integer.parseInt(maxCountOfPlayersTf.getText()), passwordChbx.isSelected(), passwordChbx.isSelected() ? passwordTf.getText() : null)) {
-            FxContainer.getCurrentModalWindow().close();
+            FxUtils.closeCurrentModalWindowIfExist();
         }
 
     }

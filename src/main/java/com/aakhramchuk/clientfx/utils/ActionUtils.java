@@ -10,6 +10,8 @@ import org.apache.commons.configuration2.Configuration;
 import java.io.IOException;
 import java.util.Scanner;
 
+import static com.aakhramchuk.clientfx.objects.Constants.LOBBY_PREFIX_VALE;
+
 public class ActionUtils {
 
 
@@ -66,7 +68,7 @@ public class ActionUtils {
         }
     }
 
-    public static void actionLobby(String operationCode, Lobby selectedLobby, String password) throws InterruptedException {
+    public static void actionLobby(String operationCode, Lobby selectedLobby, String password) throws InterruptedException, IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         boolean isJoin = Constants.JOIN_LOBBY_OPCODE_CONFIG_VALUE.equals(operationCode);
         String lobbyActionOpcode = connectionObject.getConfig().getString(operationCode);
@@ -84,10 +86,15 @@ public class ActionUtils {
             alert.showAndWait();
         } else {
             if (isJoin) {
-//                Utils.parseLobby(deserializedReceivedMessage.getMessage().substring("LOBBY".length()), true, false);
-//                LobbyManager.setCurrentLobby(lobby);
-//                inSelectLobbyMenu = false;
-//                startGameLobby();
+                selectedLobby = Utils.parseLobby(deserializedReceivedMessage.getMessage().substring(LOBBY_PREFIX_VALE.length()), true, false);
+                Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
+                        config.getString("text.alert_header_text.information_about_lobby_join"),
+                        config.getString("text.alert_content_text.information_about_lobby_join"));
+                alert.showAndWait();
+                LobbyManager.setCurrentLobby(selectedLobby);
+                FxUtils.closeCurrentModalWindowIfExist();
+                FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
+                FxContainer.getCurrentStage().setScene(FxManager.getLobbyMenuScene());
             } else {
                 Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
                         config.getString("text.alert_header_text.information_about_lobby_deletion"),
@@ -95,10 +102,34 @@ public class ActionUtils {
                 alert.showAndWait();
                 LobbyManager.setCurrentLobby(null);
                 Utils.deserializeStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
-                if (FxContainer.getCurrentModalWindow() != null) {
-                    FxContainer.getCurrentModalWindow().close();
-                }
+                FxUtils.closeCurrentModalWindowIfExist();
             }
+        }
+    }
+
+    public static void leaveLobby() throws InterruptedException, IOException {
+        ConnectionObject connectionObject = MainContainer.getConnectionObject();
+        String logoutOpcode = connectionObject.getConfig().getString("message.logout_opcode");
+        String logoutExitLobbyCommand = connectionObject.getConfig().getString("message.leave_exit_lobby_command");
+        Configuration config = connectionObject.getConfig();
+
+        String sentMessage = Utils.createMessage(config, logoutOpcode, logoutExitLobbyCommand);
+        DeserializedMessage deserializedReceivedMessage = Utils.sendMesageAndTakeResponse(logoutOpcode, sentMessage);
+
+        if (!deserializedReceivedMessage.isSucess()) {
+            Alert alert = FxUtils.createErrorAlert(config.getString("text.alert_title.error"),
+                    config.getString("text.alert_header_text.error_in_lobby_leave_process"),
+                    deserializedReceivedMessage.getMessage());
+            alert.showAndWait();
+        } else {
+            Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
+                    config.getString("text.alert_header_text.information_about_lobby_leave"),
+                    config.getString("text.alert_content_text.information_about_lobby_leave"));
+            alert.showAndWait();
+            LobbyManager.setCurrentLobby(null);
+            Utils.deserializeStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
+            FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
+            FxContainer.getCurrentStage().setScene(FxManager.getMainMenuScene());
         }
     }
 
