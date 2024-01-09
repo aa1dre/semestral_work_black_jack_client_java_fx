@@ -45,7 +45,7 @@
                   <Font name="Century Schoolbook Bold" size="30.0" />
                </font>
             </Label>
-            <TextArea editable="false" prefHeight="200.0" prefWidth="200.0">
+            <TextArea fx:id="lobbyInfoTextArea" editable="false" prefHeight="200.0" prefWidth="200.0" styleClass="text-area" stylesheets="@../../../css/textAreas.css">
                <VBox.margin>
                   <Insets bottom="15.0" left="5.0" right="10.0" top="5.0" />
                </VBox.margin>

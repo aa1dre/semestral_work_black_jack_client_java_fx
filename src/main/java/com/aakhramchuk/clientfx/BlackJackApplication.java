@@ -4,15 +4,11 @@ import com.aakhramchuk.clientfx.containers.FxContainer;
 import com.aakhramchuk.clientfx.containers.MainContainer;
 import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.ConnectionObject;
+import com.aakhramchuk.clientfx.objects.LobbyManager;
+import com.aakhramchuk.clientfx.utils.Utils;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.logging.log4j.LogManager;
@@ -24,9 +20,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class BlackJackApplication extends Application {
 
+    private static ScheduledExecutorService scheduler;
     private static final Logger logger = LogManager.getLogger(BlackJackApplication.class);
 
     @Override
@@ -46,9 +46,10 @@ public class BlackJackApplication extends Application {
     }
 
     public static void closeApplication() {
-        // Stop JavaFX application
+        if (scheduler != null) {
+            scheduler.shutdown();
+        }
         Platform.exit();
-        // Terminate JVM
         System.exit(0);
     }
 
@@ -65,8 +66,17 @@ public class BlackJackApplication extends Application {
                  BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                  Scanner scanner = new Scanner(System.in)) {
 
-                MainContainer.setConnectionObject(new ConnectionObject(writer, reader, scanner, config));
+                MainContainer.setConnectionObject(new ConnectionObject(socket, writer, reader, scanner, config));
+
                 startServerListener();
+
+                Thread outgoingMessageProcessorThread = new Thread(BlackJackApplication::processOutgoingMessages);
+                outgoingMessageProcessorThread.setDaemon(true);
+                outgoingMessageProcessorThread.start();
+
+                startPingService();
+                startPingResponseCheck();
+
                 launch();
 
             } catch (IOException ex) {
@@ -77,35 +87,142 @@ public class BlackJackApplication extends Application {
         }
 
     }
+
+    private static void closeCurrentConnection() {
+        try {
+            ConnectionObject currentConnection = MainContainer.getConnectionObject();
+            if (currentConnection.getSocket() != null && !currentConnection.getSocket().isClosed()) {
+                currentConnection.getSocket().close();
+            }
+        } catch (IOException e) {
+            logger.error("Error closing the current connection", e);
+        }
+    }
+
     public static void startServerListener() {
         Thread listenerThread = new Thread(BlackJackApplication::listenToServer);
         listenerThread.setDaemon(true);
         listenerThread.start();
     }
 
+    private static void processOutgoingMessages() {
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                String message = MainContainer.getOutgoingMessageQueue().take();
+                ConnectionObject connectionObject = MainContainer.getConnectionObject();
+                connectionObject.getWriter().print(message);
+                connectionObject.getWriter().flush();
+                logger.info("SENT: " + message);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Outgoing message processor thread interrupted", e);
+        }
+    }
+
+    private static void startPingService() {
+        String pingOpcode = MainContainer.getConnectionObject().getConfig().getString("message.ping_opcode");
+        String pingCommand = MainContainer.getConnectionObject().getConfig().getString("message.ping_command");
+        Configuration config = MainContainer.getConnectionObject().getConfig();
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (MainContainer.isConnected()) {
+                    logger.info("PING");
+                    MainContainer.getOutgoingMessageQueue().put(Utils.createMessage(config, pingOpcode, pingCommand));
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("Ping Service interrupted", e);
+            }
+        }, 0, 5, TimeUnit.SECONDS);
+    }
+
+    private static void attemptReconnect() {
+        int maxReconnectAttempts = MainContainer.getConnectionObject().getConfig().getInt("server.reconnect_attempts");
+
+        for (int attempt = 0; attempt < maxReconnectAttempts; attempt++) {
+            try {
+                closeCurrentConnection();
+
+                String hostname = MainContainer.getConnectionObject().getConfig().getString("server.hostname");
+                int port = MainContainer.getConnectionObject().getConfig().getInt("server.port");
+                Socket newSocket = new Socket(hostname, port);
+                PrintWriter newWriter = new PrintWriter(newSocket.getOutputStream(), true);
+                BufferedReader newReader = new BufferedReader(new InputStreamReader(newSocket.getInputStream()));
+
+                ConnectionObject newConnection = new ConnectionObject(newSocket, newWriter, newReader, MainContainer.getConnectionObject().getScanner(), MainContainer.getConnectionObject().getConfig());
+                MainContainer.setConnectionObject(newConnection);
+
+                MainContainer.getOutgoingMessageQueue().clear();
+
+                startServerListener();
+
+                logger.info("Reconnected to the server (Attempt " + (attempt + 1) + ")");
+                MainContainer.setConnected(true);
+                return;
+            } catch (Exception e) {
+                logger.error("Reconnect attempt " + (attempt + 1) + " failed: ", e);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ie) {
+                    if (scheduler != null) {
+                        scheduler.shutdownNow();
+                    }
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+
+        if (scheduler != null) {
+            scheduler.shutdownNow();
+        }
+
+        MainContainer.setConnected(false);
+    }
+
+
+    private static void startPingResponseCheck() {
+        scheduler.scheduleAtFixedRate(() -> {
+            long currentTime = System.currentTimeMillis();
+
+            if ((currentTime - MainContainer.getLastPingResponseTime()) > 10000 && MainContainer.isConnected()) {
+                logger.warn("No ping response from server for 5 seconds. Attempting to reconnect.");
+                attemptReconnect();
+            }
+        }, 0, 10, TimeUnit.SECONDS);
+    }
+
     private static void listenToServer() {
+        String pongResponse = MainContainer.getConnectionObject().getConfig().getString("message.pong_response");
         try {
             String messageFromServer;
-            while ((messageFromServer = MainContainer.getConnectionObject().getReader().readLine()) != null) {
+                while ((messageFromServer = MainContainer.getConnectionObject().getReader().readLine()) != null) {
                 if (MainContainer.isAwaitingResponse()) {
-                    MainContainer.getMessageQueue().put(messageFromServer);
+                    MainContainer.getIncomingMessageQueue().put(messageFromServer);
                     MainContainer.setAwaitingResponse(false);
+                } else if (messageFromServer.equals(pongResponse)) {
+                    MainContainer.updateLastPingResponseTime();
+                    logger.info("RECEIVED: " + messageFromServer);
+                    logger.info("PONG");
                 } else {
-//                    if (inGame) {
-//                        if (LobbyManager.getCurrentLobby().getGameObject() == null) {
-//                            gameQueue.put(messageFromServer);
-//                        } else {
-//                            if (!ourTurnEvaluated) {
-//                                gameQueue.put(messageFromServer);
-//                            } else {
-//                                logger.info("RECEIVED PING: " + messageFromServer);
-//                                handleServerMessage(messageFromServer, "message.game_action_opcode");
-//                            }
-//                        }
-//                    } else {
-//                        logger.info("RECEIVED PING: " + messageFromServer);
-//                        handleServerMessage(messageFromServer, "message.lobby_create_opcode");
-//                    }
+                    if (MainContainer.isInGame()) {
+                        if (LobbyManager.getCurrentLobby().getGameObject() == null) {
+                            MainContainer.getGameQueue().put(messageFromServer);
+                        } else {
+                            if (!MainContainer.isOurTurnEvaluated()) {
+                                MainContainer.getGameQueue().put(messageFromServer);
+                            } else {
+                                logger.info("RECEIVED PING: " + messageFromServer);
+                                Utils.handleServerMessage(messageFromServer, "message.game_action_opcode");
+                            }
+                        }
+                    } else {
+                        logger.info("RECEIVED PING: " + messageFromServer);
+                        Utils.handleServerMessage(messageFromServer, "message.lobby_create_opcode");
+                    }
                 }
             }
         } catch (IOException e) {
@@ -115,4 +232,6 @@ public class BlackJackApplication extends Application {
             logger.error("Listener thread interrupted", e);
         }
     }
+
+
 }

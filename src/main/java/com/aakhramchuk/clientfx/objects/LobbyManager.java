@@ -60,5 +60,11 @@ public class LobbyManager {
         return lobbiesList;
     }
 
+    public static void updateCurrentLobby(Lobby lobbyInfoToUpdate) {
+        Lobby currentLobby = LobbyManager.getCurrentLobby();
+        currentLobby.setAdminInfo(lobbyInfoToUpdate.getAdminInfo());
+        currentLobby.setCurrentPlayers(lobbyInfoToUpdate.getCurrentPlayers());
+        currentLobby.updateUsersList(lobbyInfoToUpdate.getUsersList());
+    }
 }
 

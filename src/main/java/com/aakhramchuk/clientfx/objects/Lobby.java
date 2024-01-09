@@ -20,7 +20,7 @@ public class Lobby {
     private StringProperty creatorInfo = new SimpleStringProperty();
     private final ObservableList<User> usersList = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
     private BooleanProperty gameStarted = new SimpleBooleanProperty();
-    private GameObject gameObject; // Assuming GameObject does not need to be a property.
+    private GameObject gameObject;
 
     public Lobby(int id, String name, int maxPlayers, boolean hasPassword,
                  int currentPlayers, String adminInfo, String creatorInfo, boolean gameStarted) {
@@ -98,6 +98,10 @@ public class Lobby {
         return getHasPassword();
     }
 
+    public void updateUsersList(ObservableList<User> users) {
+        usersList.clear();
+        usersList.addAll(users);
+    }
 
     public void addUser(User user) {
         Platform.runLater(() -> usersList.add(user));

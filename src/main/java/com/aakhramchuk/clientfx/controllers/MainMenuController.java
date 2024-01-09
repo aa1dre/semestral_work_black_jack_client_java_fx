@@ -65,6 +65,9 @@ public class MainMenuController {
 
     @FXML
     public void initialize() {
+        MainContainer.setInSelectLobbyMenu(true);
+        MainContainer.setInLobbyMenu(false);
+
         try {
             InputStream is = getClass().getResourceAsStream("/Images/background.jpg");
             if (is == null) {

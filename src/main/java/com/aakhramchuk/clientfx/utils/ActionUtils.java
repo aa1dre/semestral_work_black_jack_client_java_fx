@@ -30,7 +30,7 @@ public class ActionUtils {
                     config.getString("text.alert_header_text.information_about_logout"),
                     deserializedReceivedMessage.getMessage());
             alert.showAndWait();
-            FxContainer.getCurrentStage().setScene(FxManager.getLoginScene());
+            FxManager.changeCurrentSceneToLoginScene();
         } else {
             Alert alert = FxUtils.createErrorAlert(config.getString("text.alert_title.error"),
                     config.getString("text.alert_header_text.error_in_logout_process"),

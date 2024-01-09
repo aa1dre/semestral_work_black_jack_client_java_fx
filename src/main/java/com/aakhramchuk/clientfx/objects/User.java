@@ -31,10 +31,10 @@ public class User {
         setSurname(surname);
     }
 
-    public User(String name, String surname, String username) {
+    public User(String username, String name, String surname) {
+        setUsername(username);
         setName(name);
         setSurname(surname);
-        setUsername(username);
     }
 
     public String toStringLogin() {

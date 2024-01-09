@@ -21,21 +21,24 @@ public class Utils {
         return prefix + opcode + length + message;
     }
 
-    public static DeserializedMessage confirmAndDeserializeErrorMessage(ConnectionObject connectionObject, String originalOpcode, String message) {
+    public static DeserializedMessage confirmAndDeserializeErrorMessage(ConnectionObject connectionObject, String originalOpcode, String message, boolean isPing ) {
         Configuration config = connectionObject.getConfig();
         String prefix = config.getString("message.prefix");
         String startGameCommand = connectionObject.getConfig().getString("message.game_start_command");
         String takeGameCommand = connectionObject.getConfig().getString("message.game_take_command");
         String passGameCommand = connectionObject.getConfig().getString("message.game_pass_command");
         String turnGameCommand = connectionObject.getConfig().getString("message.game_turn_command");
+        String endGameCommand = connectionObject.getConfig().getString("message.game_end_command");
 
         if (!message.startsWith(prefix)) {
             logger.error("Invalid message prefix");
         }
 
         String responseOpcode = message.substring(prefix.length(), prefix.length() + 2);
-        if (responseOpcode.charAt(0) != '1' || responseOpcode.charAt(1) != originalOpcode.charAt(originalOpcode.length() - 1)) {
-            logger.error("Invalid opcode in response");
+        if (!isPing) {
+            if (responseOpcode.charAt(0) != '1' || responseOpcode.charAt(1) != originalOpcode.charAt(originalOpcode.length() - 1)) {
+                logger.error("Invalid opcode in response");
+            }
         }
 
         int declaredLength = Integer.parseInt(message.substring(prefix.length() + 2, prefix.length() + 6));
@@ -61,8 +64,11 @@ public class Utils {
         } else if (payload.startsWith(turnGameCommand)) {
             deserializedMessage = payload.substring(turnGameCommand.length());
             messageType = turnGameCommand;
+        } else if (payload.startsWith(endGameCommand)) {
+            deserializedMessage = payload.substring(endGameCommand.length());
+            messageType = endGameCommand;
         }
-          else {
+        else {
             isGameMessage = false;
             isSuccess = payload.charAt(0) == '1';
 
@@ -158,15 +164,14 @@ public class Utils {
 
     public static DeserializedMessage sendMesageAndTakeResponse(String opcode, String sentMessage) throws InterruptedException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
-        logger.info("SENT: " + sentMessage);
-        connectionObject.getWriter().print(sentMessage);
-        connectionObject.getWriter().flush();
+        logger.info("QUEUED: " + sentMessage);
+        MainContainer.getOutgoingMessageQueue().put(sentMessage);
 
         MainContainer.setAwaitingResponse(true);
-        String response = MainContainer.getMessageQueue().take();
+        String response = MainContainer.getIncomingMessageQueue().take();
         logger.info("RECEIVED: " + response);
 
-        return Utils.confirmAndDeserializeErrorMessage(connectionObject, opcode, response);
+        return Utils.confirmAndDeserializeErrorMessage(connectionObject, opcode, response, false);
     }
 
     static Lobby parseLobby(String lobby, boolean inLobby, boolean inGame) {
@@ -269,7 +274,7 @@ public class Utils {
         return players;
     }
 
-    private static List<GamePlayer> parseGamePlayers(String gamePlayersString) {
+    public static List<GamePlayer> parseGamePlayers(String gamePlayersString) {
         List<GamePlayer> players = new ArrayList<>();
         if (gamePlayersString.equals("[]")) {
             return players;
@@ -305,7 +310,7 @@ public class Utils {
 
         for (String playerString : playerStrings) {
             GamePlayer player = parseGamePlayer(playerString);
-            if (player.getLogin().equals(currentPlayerStringDetails[0])) {
+            if (player.getUsername().equals(currentPlayerStringDetails[0])) {
                 player.setIsCurrentPlayer(true);
             }
             players.add(player);
@@ -358,8 +363,9 @@ public class Utils {
                 cardDetailString = cardDetailString.substring(1, cardDetailString.length() - 1);
             }
             if (!cardDetailString.isBlank()) {
-                String[] cardDetails = cardDetailString.split(",");
+                String[] cardDetails = cardDetailString.split(";");
                 cards.addAll(Arrays.asList(cardDetails));
+                cardCount = cards.size();
             }
         } else {
             cardCount = Integer.parseInt(details.get(4));
@@ -441,4 +447,52 @@ public class Utils {
         String[] userDetails = userInfo.substring(1, userInfo.length() - 1).split(";");
         return new User(userDetails[0], userDetails[1], userDetails[2]);
     }
+
+    public static void handleServerMessage(String message, String opcodeString) {
+        ConnectionObject connectionObject = MainContainer.getConnectionObject();
+        String opcode = connectionObject.getConfig().getString(opcodeString);
+        String turnGameCommand = connectionObject.getConfig().getString("message.game_turn_command");
+        String startGameCommand = connectionObject.getConfig().getString("message.game_start_command");
+        String takeGameCommand = connectionObject.getConfig().getString("message.game_take_command");
+        String passGameCommand = connectionObject.getConfig().getString("message.game_pass_command");
+        String endGameCommand = connectionObject.getConfig().getString("message.game_end_command");
+
+        DeserializedMessage deserializedReceivedMessage = Utils.confirmAndDeserializeErrorMessage(connectionObject, opcode, message, true);
+        if (deserializedReceivedMessage.isSucess()) {
+            if (MainContainer.isInSelectLobbyMenu()) {
+                Utils.parseAndUpdateLobbies(deserializedReceivedMessage.getMessage());
+            } else if (MainContainer.isInLobbyMenu()) {
+                String messageToParse = deserializedReceivedMessage.getMessage().substring(Constants.LOBBY_PREFIX_VALE.length());
+                LobbyManager.updateCurrentLobby(Utils.parseLobby(messageToParse, true, false));
+            } else if (deserializedReceivedMessage.isGameMessage()) {
+                    if (LobbyManager.getCurrentLobby() != null) {
+                        if (deserializedReceivedMessage.getMessageType().equals(turnGameCommand)) {
+                            if (LobbyManager.getCurrentLobby() != null && LobbyManager.getCurrentLobby().getGameObject() != null) {
+                                LobbyManager.getCurrentLobby().getGameObject().getPlayers().forEach(player -> {
+                                    if (player.isCurrentPlayer()) {
+                                        player.setIsCurrentPlayer(false);
+                                    }
+                                    if (player.getUsername().equals(deserializedReceivedMessage.getMessage().substring(2))) {
+                                        player.setIsCurrentPlayer(true);
+                                    }
+                                });
+                            }
+                            MainContainer.setInGame(true);
+                        } else if (deserializedReceivedMessage.getMessageType().equals(startGameCommand)
+                                || deserializedReceivedMessage.getMessageType().equals(takeGameCommand)
+                                || deserializedReceivedMessage.getMessageType().equals(passGameCommand)) {
+                            if (LobbyManager.getCurrentLobby().getGameObject() == null) {
+                                LobbyManager.getCurrentLobby().setGameObject(new GameObject(Utils.parseStartGamePlayers(message)));
+                            } else {
+                                LobbyManager.getCurrentLobby().getGameObject().setPlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                            }
+                        } else if (deserializedReceivedMessage.getMessageType().equals(endGameCommand)) {
+                            GameUtils.endGame(deserializedReceivedMessage.getMessage());
+
+                        }
+                    }
+                }
+            }
+        }
+
 }

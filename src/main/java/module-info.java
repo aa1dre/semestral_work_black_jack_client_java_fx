@@ -7,6 +7,7 @@ module com.aakhramchuk.clientfx {
     requires org.kordamp.bootstrapfx.core;
     requires org.apache.commons.configuration2;
     requires org.apache.logging.log4j;
+    requires java.desktop;
 
     opens com.aakhramchuk.clientfx to javafx.fxml;
     exports com.aakhramchuk.clientfx;

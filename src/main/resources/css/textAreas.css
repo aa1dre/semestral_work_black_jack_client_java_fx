@@ -1,0 +1,15 @@
+.text-area {
+    -fx-font-family: "Century Schoolbook Bold";
+    -fx-font-size: 14;
+    -fx-border-color: #5A2906;
+    -fx-border-width: 3px;
+    -fx-text-fill: black;
+}
+
+.text-area:focused {
+    -fx-faint-focus-color: #8B4513;
+}
+
+.text-area .content {
+    -fx-padding: 5px; /* Adjust padding as needed */
+}

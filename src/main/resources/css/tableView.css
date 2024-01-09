@@ -17,7 +17,7 @@
 
 .table-cell {
     -fx-wrap-text: true;
-    -fx-font-family: "Comic Sans MS";
+    -fx-font-family: "Century Schoolbook";
     -fx-font-size: 18;
 }
 
@@ -26,7 +26,7 @@
     -fx-border-color: #5A2906;
     -fx-border-width: 3px;
     -fx-padding: 0px;
-    -fx-font-family: "Comic Sans MS";
+    -fx-font-family: "Century Schoolbook";
     -fx-font-size: 18;
 }
 
@@ -41,7 +41,7 @@
 .table-view .column-header-background{
     -fx-background-color: linear-gradient(to bottom, #8B4513, #A0522D);
     -fx-padding: 0px;
-    -fx-font-family: "Comic Sans MS";
+    -fx-font-family: "Century Schoolbook";
     -fx-font-size: 18;
     -fx-border-color: #5A2906;
     -fx-border-width: 2px;

@@ -64,14 +64,15 @@ public class LoginController {
         } else {
             String messageType = Utils.deserializeLoginStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
             if ("MENU".equals(messageType)) {
-                //startLobbyMenu();
+                MainContainer.setInLobbyMenu(false);
                 FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
                 FxContainer.getCurrentStage().setScene(FxManager.getMainMenuScene());
             } else if("LOBBY".equals(messageType)) {
+                MainContainer.setInLobbyMenu(true);
                 FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
                 FxContainer.getCurrentStage().setScene(FxManager.getLobbyMenuScene());
             } else if ("GAME".equals(messageType)) {
-                //startPlay();
+                FxManager.changeCurrentSceneToGameScene();
             }
         }
     }
@@ -79,5 +80,10 @@ public class LoginController {
     @FXML
     public void hrefAction(ActionEvent action) throws IOException {
         FxManager.createRegistrationModalWindow();
+    }
+
+    @FXML
+    public void initialize() {
+        MainContainer.setInSelectLobbyMenu(false);
     }
 }

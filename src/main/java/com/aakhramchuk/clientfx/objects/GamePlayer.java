@@ -1,58 +1,81 @@
 package com.aakhramchuk.clientfx.objects;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+
 import java.util.List;
 
 public class GamePlayer {
-    String login;
-    String name;
-    String surname;
-    boolean cardsVisible;
-    List<String> cards;
-    int cardCount;
-    boolean isCurrentPlayer;
-    int cardsValue = -1; // Флаг, указывающий на текущего игрока
+    private StringProperty username = new SimpleStringProperty();
+    private StringProperty name = new SimpleStringProperty();
+    private StringProperty surname = new SimpleStringProperty();
+    private BooleanProperty cardsVisible = new SimpleBooleanProperty();
+    private ListProperty<String> cards = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private IntegerProperty cardCount = new SimpleIntegerProperty();
+    private BooleanProperty isCurrentPlayer = new SimpleBooleanProperty();
+    private IntegerProperty cardsValue = new SimpleIntegerProperty(-1);
+    private BooleanProperty isOnline = new SimpleBooleanProperty();
 
-    public GamePlayer(String login, String name, String surname, boolean cardsVisible, List<String> cards, int cardCount) {
-        this.login = login;
-        this.name = name;
-        this.surname = surname;
-        this.cardsVisible = cardsVisible;
-        this.cards = cards;
-        this.cardCount = cardCount;
+    public GamePlayer(String username, String name, String surname, boolean cardsVisible, List<String> cards, int cardCount) {
+        setUsername(username);
+        setName(name);
+        setSurname(surname);
+        setCardsVisible(cardsVisible);
+        this.cards.setAll(cards);
+        setCardCount(cardCount);
+        setOnline(true);
     }
 
-    public String getLogin() {
-        return login;
-    }
+    // online property
+    public boolean isOnline() { return isOnline.get(); }
+    public void setOnline(boolean isOnline) { this.isOnline.set(isOnline); }
+    public BooleanProperty isOnlineProperty() { return isOnline; }
 
-    public void setIsCurrentPlayer(boolean currentPlayer) {
-        isCurrentPlayer = currentPlayer;
-    }
+    // Username property
+    public String getUsername() { return username.get(); }
+    public void setUsername(String username) { this.username.set(username); }
+    public StringProperty usernameProperty() { return username; }
 
-    public boolean isCurrentPlayer() {
-        return isCurrentPlayer;
-    }
+    // Name property
+    public String getName() { return name.get(); }
+    public void setName(String name) { this.name.set(name); }
+    public StringProperty nameProperty() { return name; }
 
-    public int getCardsValue() {
-        return cardsValue;
-    }
+    // Surname property
+    public String getSurname() { return surname.get(); }
+    public void setSurname(String surname) { this.surname.set(surname); }
+    public StringProperty surnameProperty() { return surname; }
 
-    public void setCardsValue(int cardsValue) {
-        this.cardsValue = cardsValue;
-    }
+    // CardsVisible property
+    public boolean isCardsVisible() { return cardsVisible.get(); }
+    public void setCardsVisible(boolean cardsVisible) { this.cardsVisible.set(cardsVisible); }
+    public BooleanProperty cardsVisibleProperty() { return cardsVisible; }
 
-    @Override
-    public String toString() {
-        int lineWidth = 80;
-        String cardInfo = (cardsVisible && (cards == null || !cards.isEmpty())) ?
-                ("Cards: " + String.join(", ", cards) + (cardsValue != -1 ? " (Value: " + cardsValue + ")" : "")) :
-                "Card count: " + cardCount;
+    // Cards property
+    public List<String> getCards() { return cards.get(); }
+    public void setCards(List<String> cards) { this.cards.setAll(cards); }
+    public ListProperty<String> cardsProperty() { return cards; }
 
-        String currentPlayerInfo = isCurrentPlayer ? "-> " : "   ";
+    // CardCount property
+    public int getCardCount() { return cardCount.get(); }
+    public void setCardCount(int cardCount) { this.cardCount.set(cardCount); }
+    public IntegerProperty cardCountProperty() { return cardCount; }
 
-        String playerInfo = String.format("%-40s", currentPlayerInfo + login + " - " + name + " " + surname);
-        String cardInfoFormatted = String.format("%40s", cardInfo);
+    // IsCurrentPlayer property
+    public boolean isCurrentPlayer() { return isCurrentPlayer.get(); }
+    public void setIsCurrentPlayer(boolean isCurrentPlayer) { this.isCurrentPlayer.set(isCurrentPlayer); }
+    public BooleanProperty isCurrentPlayerProperty() { return isCurrentPlayer; }
 
-        return playerInfo + cardInfoFormatted;
-    }
+    // CardsValue property
+    public int getCardsValue() { return cardsValue.get(); }
+    public void setCardsValue(int cardsValue) { this.cardsValue.set(cardsValue); }
+    public IntegerProperty cardsValueProperty() { return cardsValue; }
+
 }
