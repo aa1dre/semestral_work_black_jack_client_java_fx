@@ -63,6 +63,7 @@ public class LobbyMenuController {
     @FXML
     public void initialize() {
         MainContainer.setInSelectLobbyMenu(false);
+        MainContainer.setInGame(false);
         MainContainer.setInLobbyMenu(true);
 
         bindLobbyInfoToTextArea(LobbyManager.getCurrentLobby());

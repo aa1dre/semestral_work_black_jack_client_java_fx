@@ -33,6 +33,13 @@ public class GamePlayer {
         setOnline(true);
     }
 
+    public void updatePlayer(GamePlayer player) {
+        setCardsVisible(player.isCardsVisible());
+        setCards(player.getCards());
+        setCardCount(player.getCardCount());
+        setCardsValue(player.getCardsValue());
+    }
+
     // online property
     public boolean isOnline() { return isOnline.get(); }
     public void setOnline(boolean isOnline) { this.isOnline.set(isOnline); }

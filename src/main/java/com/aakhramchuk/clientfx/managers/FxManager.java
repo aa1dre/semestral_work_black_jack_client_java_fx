@@ -27,7 +27,6 @@ public class FxManager {
             }
         });
 
-
         window.setResizable(false);
         window.setScene(scene);
         window.setTitle(title);
@@ -53,22 +52,21 @@ public class FxManager {
         createModalWindow(new Scene(root), "Enter password");
     }
 
-
     public static void createLobbyCreationModalWindow() throws IOException {
         FXMLLoader loader = new FXMLLoader(BlackJackApplication.class.getResource("lobbyCreation.fxml"));
 
         createModalWindow(new Scene(loader.load()), "Lobby creation");
     }
 
-    public static Scene getMainMenuScene() throws IOException {
-        FXMLLoader fxmlMain = new FXMLLoader(BlackJackApplication.class.getResource("mainMenu.fxml"));
-        FxContainer.setCurrentScene(new Scene(fxmlMain.load(), FxContainer.getCurrentScene().getWidth(), FxContainer.getCurrentScene().getHeight()));
-        return FxContainer.getCurrentScene();
+    public static void createGameEndModalWindow() throws IOException {
+        FXMLLoader loader = new FXMLLoader(BlackJackApplication.class.getResource("gameEnd.fxml"));
+
+        createModalWindow(new Scene(loader.load()), "Game end");
     }
 
-    public static Scene getLobbyMenuScene() throws IOException {
-        FXMLLoader fxmlMain = new FXMLLoader(BlackJackApplication.class.getResource("lobbyMenu.fxml"));
-        FxContainer.setCurrentScene(new Scene(fxmlMain.load(), FxContainer.getCurrentScene().getWidth(), FxContainer.getCurrentScene().getHeight()));
+    public static Scene getMainMenuScene() throws IOException {
+        FXMLLoader fxmlMain = new FXMLLoader(BlackJackApplication.class.getResource("mainMenu.fxml"));
+        FxContainer.setCurrentScene(new Scene(fxmlMain.load(), 800, 500));
         return FxContainer.getCurrentScene();
     }
 
@@ -85,11 +83,47 @@ public class FxManager {
         FxContainer.getCurrentStage().setMinHeight(900);
     }
 
-    public static void changeCurrentSceneToLoginScene() throws IOException {
-        FxContainer.getCurrentStage().setScene(getLoginScene());
-        FxContainer.getCurrentStage().setResizable(false);
-        FxContainer.getCurrentStage().setMinWidth(800);
-        FxContainer.getCurrentStage().setMinHeight(500);
+    public static void changeCurrentSceneToMainMenuScene() throws IOException {
+        Scene newScene = getMainMenuScene();
+        Stage currentStage = FxContainer.getCurrentStage();
+
+        currentStage.setScene(newScene);
+
+        currentStage.sizeToScene();
+        currentStage.setResizable(false);
+        currentStage.setMinWidth(800);
+        currentStage.setMinHeight(500);
+    }
+
+
+        public static void changeCurrentSceneToLoginScene() throws IOException {
+        Scene newScene = getLoginScene();
+        Stage currentStage = FxContainer.getCurrentStage();
+
+        currentStage.setScene(newScene);
+
+        currentStage.sizeToScene();
+        currentStage.setResizable(false);
+        currentStage.setMinWidth(800);
+        currentStage.setMinHeight(500);
+    }
+
+    public static Scene getLobbyMenuScene(double width, double height) throws IOException {
+        FXMLLoader fxmlMain = new FXMLLoader(BlackJackApplication.class.getResource("lobbyMenu.fxml"));
+        FxContainer.setCurrentScene(new Scene(fxmlMain.load(), width, height));
+        return FxContainer.getCurrentScene();
+    }
+
+    public static void changeCurrentSceneToLobbyScene() throws IOException {
+        Scene newScene = getLobbyMenuScene(800, 500);
+        Stage currentStage = FxContainer.getCurrentStage();
+
+        currentStage.setScene(newScene);
+
+        currentStage.sizeToScene();
+        currentStage.setResizable(false);
+        currentStage.setMinWidth(800);
+        currentStage.setMinHeight(500);
     }
 
     public static Scene getLoginScene() throws IOException {

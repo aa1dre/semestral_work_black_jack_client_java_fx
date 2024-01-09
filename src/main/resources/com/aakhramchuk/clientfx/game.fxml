@@ -23,6 +23,7 @@
             <Menu mnemonicParsing="false" text="User">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#logoutAction" text="Log out" />
+                  <MenuItem mnemonicParsing="false" onAction="#leaveLobbyAction" text="Leave Lobby" />
                </items>
                <graphic>
                   <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">

@@ -67,6 +67,7 @@ public class MainMenuController {
     public void initialize() {
         MainContainer.setInSelectLobbyMenu(true);
         MainContainer.setInLobbyMenu(false);
+        MainContainer.setInGame(false);
 
         try {
             InputStream is = getClass().getResourceAsStream("/Images/background.jpg");

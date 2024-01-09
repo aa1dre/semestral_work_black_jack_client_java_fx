@@ -93,8 +93,7 @@ public class ActionUtils {
                 alert.showAndWait();
                 LobbyManager.setCurrentLobby(selectedLobby);
                 FxUtils.closeCurrentModalWindowIfExist();
-                FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
-                FxContainer.getCurrentStage().setScene(FxManager.getLobbyMenuScene());
+                FxManager.changeCurrentSceneToLobbyScene();
             } else {
                 Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
                         config.getString("text.alert_header_text.information_about_lobby_deletion"),

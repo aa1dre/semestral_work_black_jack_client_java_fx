@@ -8,6 +8,7 @@ import com.aakhramchuk.clientfx.objects.User;
 import com.aakhramchuk.clientfx.utils.ActionUtils;
 import com.aakhramchuk.clientfx.utils.FxUtils;
 import com.aakhramchuk.clientfx.utils.GameUtils;
+import com.aakhramchuk.clientfx.utils.Utils;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -150,6 +151,11 @@ public class GameController {
     }
 
     @FXML
+    public void leaveLobbyAction(ActionEvent event) throws IOException, InterruptedException {
+        ActionUtils.leaveLobby();
+    }
+
+    @FXML
     public void takeBtnAction(ActionEvent event) throws IOException, InterruptedException {
         GameUtils.takeAction();
     }
@@ -168,7 +174,7 @@ public class GameController {
             int cardSpacing = calculateCardSpacing(cardCount);
 
             for (String cardCode : player.getCards()) {
-                String cardPath = getCardImagePath(cardCode);
+                String cardPath = Utils.getCardImagePath(cardCode);
                 InputStream is = getClass().getResourceAsStream(cardPath);
                 if (is != null) {
                     Image image = new Image(is);
@@ -208,16 +214,4 @@ public class GameController {
         }
     }
 
-
-    private String getCardImagePath(String cardCode) {
-        char suit = cardCode.charAt(0);
-
-        switch (suit) {
-            case 'C': return "/Images/clubs/" + cardCode + ".png";
-            case 'D': return "/Images/diamonds/" + cardCode + ".png";
-            case 'H': return "/Images/hearts/" + cardCode + ".png";
-            case 'S': return "/Images/spades/" + cardCode + ".png";
-            default: return null;
-        }
-    }
 }

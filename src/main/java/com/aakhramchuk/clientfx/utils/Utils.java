@@ -1,11 +1,14 @@
 package com.aakhramchuk.clientfx.utils;
 
 import com.aakhramchuk.clientfx.containers.MainContainer;
+import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.*;
+import javafx.application.Platform;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -448,7 +451,7 @@ public class Utils {
         return new User(userDetails[0], userDetails[1], userDetails[2]);
     }
 
-    public static void handleServerMessage(String message, String opcodeString) {
+    public static void handleServerMessage(String message, String opcodeString) throws IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String opcode = connectionObject.getConfig().getString(opcodeString);
         String turnGameCommand = connectionObject.getConfig().getString("message.game_turn_command");
@@ -461,7 +464,7 @@ public class Utils {
         if (deserializedReceivedMessage.isSucess()) {
             if (MainContainer.isInSelectLobbyMenu()) {
                 Utils.parseAndUpdateLobbies(deserializedReceivedMessage.getMessage());
-            } else if (MainContainer.isInLobbyMenu()) {
+            } else if (MainContainer.isInLobbyMenu() && deserializedReceivedMessage.getMessage().startsWith(Constants.LOBBY_PREFIX_VALE)) {
                 String messageToParse = deserializedReceivedMessage.getMessage().substring(Constants.LOBBY_PREFIX_VALE.length());
                 LobbyManager.updateCurrentLobby(Utils.parseLobby(messageToParse, true, false));
             } else if (deserializedReceivedMessage.isGameMessage()) {
@@ -483,16 +486,54 @@ public class Utils {
                                 || deserializedReceivedMessage.getMessageType().equals(passGameCommand)) {
                             if (LobbyManager.getCurrentLobby().getGameObject() == null) {
                                 LobbyManager.getCurrentLobby().setGameObject(new GameObject(Utils.parseStartGamePlayers(message)));
+                                if (Platform.isFxApplicationThread()) {
+                                    FxManager.changeCurrentSceneToGameScene();
+                                } else {
+                                    Platform.runLater(() -> {
+                                        try {
+                                            FxManager.changeCurrentSceneToGameScene();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+                                }
                             } else {
-                                LobbyManager.getCurrentLobby().getGameObject().setPlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                                if (LobbyManager.getCurrentLobby().getGameObject().getPlayers() == null || LobbyManager.getCurrentLobby().getGameObject().getPlayers().isEmpty()) {
+                                    if (Platform.isFxApplicationThread()) {
+                                        LobbyManager.getCurrentLobby().getGameObject().setPlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                                    } else {
+                                        Platform.runLater(() -> {
+                                            LobbyManager.getCurrentLobby().getGameObject().setPlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                                        });
+                                    }
+                                } else {
+                                    if (Platform.isFxApplicationThread()) {
+                                        LobbyManager.getCurrentLobby().getGameObject().updatePlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                                    } else {
+                                        Platform.runLater(() -> {
+                                            LobbyManager.getCurrentLobby().getGameObject().updatePlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                                        });
+                                    }
+                                }
                             }
                         } else if (deserializedReceivedMessage.getMessageType().equals(endGameCommand)) {
                             GameUtils.endGame(deserializedReceivedMessage.getMessage());
-
                         }
                     }
                 }
             }
         }
 
+
+    public static String getCardImagePath(String cardCode) {
+        char suit = cardCode.charAt(0);
+
+        switch (suit) {
+            case 'C': return "/Images/clubs/" + cardCode + ".png";
+            case 'D': return "/Images/diamonds/" + cardCode + ".png";
+            case 'H': return "/Images/hearts/" + cardCode + ".png";
+            case 'S': return "/Images/spades/" + cardCode + ".png";
+            default: return null;
+        }
+    }
 }

@@ -3,6 +3,7 @@ package com.aakhramchuk.clientfx.utils;
 import com.aakhramchuk.clientfx.containers.MainContainer;
 import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.*;
+import javafx.application.Platform;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +22,7 @@ public class GameUtils {
         Configuration config = connectionObject.getConfig();
 
         evaluateGameAction(gameActionOpcode, startGameCommand, config);
+        MainContainer.setOurTurnEvaluated(true);
     }
 
     public static void passAction() throws InterruptedException, IOException {
@@ -30,6 +32,7 @@ public class GameUtils {
         Configuration config = connectionObject.getConfig();
 
         evaluateGameAction(gameActionOpcode, startGameCommand, config);
+        MainContainer.setOurTurnEvaluated(true);
     }
 
     public static void takeAction() throws InterruptedException, IOException {
@@ -39,11 +42,12 @@ public class GameUtils {
         Configuration config = connectionObject.getConfig();
 
         evaluateGameAction(gameActionOpcode, startGameCommand, config);
+        MainContainer.setOurTurnEvaluated(true);
     }
 
     private static void evaluateGameAction(String gameActionOpcode, String startGameCommand, Configuration config) throws InterruptedException, IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
-        boolean startedCommand = false;
+        boolean startedCommand;
 
         String endGameCommand = connectionObject.getConfig().getString("message.game_end_command");
         String sentMessage = Utils.createMessage(config, gameActionOpcode, startGameCommand);
@@ -74,7 +78,6 @@ public class GameUtils {
                     LobbyManager.getCurrentLobby().getGameObject().setPlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
                 }
                 FxManager.changeCurrentSceneToGameScene();
-                MainContainer.setOurTurnEvaluated(true);
                 while (!MainContainer.getGameQueue().isEmpty()) {
                     Utils.handleServerMessage(MainContainer.getGameQueue().take(), "message.game_action_opcode");
                 }
@@ -82,15 +85,12 @@ public class GameUtils {
                 endGame(deserializedReceivedMessage.getMessage());
             }
         } else {
-            if (startedCommand) {
-                MainContainer.setInGame(false);
-            }
             MainContainer.setOurTurnEvaluated(true);
             System.out.println(deserializedReceivedMessage.getMessage());
         }
     }
 
-    public static void endGame(String message) {
+    public static void endGame(String message) throws IOException {
         if (message !=null) {
             String messageToEvaluate = message.substring(1);
             messageToEvaluate = messageToEvaluate.substring(messageToEvaluate.indexOf(';') + 1);
@@ -112,9 +112,31 @@ public class GameUtils {
                 }
             }
 
-            LobbyManager.getCurrentLobby().setGameObject(null);
-            MainContainer.setInGame(false);
-            MainContainer.setInLobbyMenu(true);
+            if (Platform.isFxApplicationThread()) {
+                LobbyManager.getCurrentLobby().getGameObject().updatePlayers(players);
+            } else {
+                Platform.runLater(() -> LobbyManager.getCurrentLobby().getGameObject().updatePlayers(players));
+            }
+
+            LobbyManager.getCurrentLobby().getGameObject().getWinners().addAll(winersList);
+            MainContainer.setOurTurnEvaluated(true);
+
+            if (Platform.isFxApplicationThread()) {
+                FxManager.createGameEndModalWindow();
+                LobbyManager.getCurrentLobby().setGameObject(null);
+                FxManager.changeCurrentSceneToLobbyScene();
+            } else {
+                Platform.runLater(() -> {
+                    try {
+                        FxManager.createGameEndModalWindow();
+                        LobbyManager.getCurrentLobby().setGameObject(null);
+                        FxManager.changeCurrentSceneToLobbyScene();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+
         }
     }
 

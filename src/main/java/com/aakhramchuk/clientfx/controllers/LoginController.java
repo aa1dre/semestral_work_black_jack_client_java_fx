@@ -64,13 +64,10 @@ public class LoginController {
         } else {
             String messageType = Utils.deserializeLoginStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
             if ("MENU".equals(messageType)) {
-                MainContainer.setInLobbyMenu(false);
                 FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
                 FxContainer.getCurrentStage().setScene(FxManager.getMainMenuScene());
             } else if("LOBBY".equals(messageType)) {
-                MainContainer.setInLobbyMenu(true);
-                FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
-                FxContainer.getCurrentStage().setScene(FxManager.getLobbyMenuScene());
+                FxManager.changeCurrentSceneToLobbyScene();
             } else if ("GAME".equals(messageType)) {
                 FxManager.changeCurrentSceneToGameScene();
             }
