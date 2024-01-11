@@ -23,14 +23,14 @@ public class GamePlayer {
     private IntegerProperty cardsValue = new SimpleIntegerProperty(-1);
     private BooleanProperty isOnline = new SimpleBooleanProperty();
 
-    public GamePlayer(String username, String name, String surname, boolean cardsVisible, List<String> cards, int cardCount) {
+    public GamePlayer(String username, String name, String surname, boolean cardsVisible, List<String> cards, int cardCount, boolean isOnline) {
         setUsername(username);
         setName(name);
         setSurname(surname);
         setCardsVisible(cardsVisible);
         this.cards.setAll(cards);
         setCardCount(cardCount);
-        setOnline(true);
+        setOnline(isOnline);
     }
 
     public void updatePlayer(GamePlayer player) {

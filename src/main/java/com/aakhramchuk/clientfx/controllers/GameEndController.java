@@ -1,26 +1,22 @@
 package com.aakhramchuk.clientfx.controllers;
 
 import com.aakhramchuk.clientfx.containers.MainContainer;
+import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.GamePlayer;
-import com.aakhramchuk.clientfx.objects.Lobby;
 import com.aakhramchuk.clientfx.objects.LobbyManager;
-import com.aakhramchuk.clientfx.utils.ActionUtils;
 import com.aakhramchuk.clientfx.utils.FxUtils;
-import com.aakhramchuk.clientfx.utils.GameUtils;
 import com.aakhramchuk.clientfx.utils.Utils;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -67,21 +63,11 @@ public class GameEndController {
     public void initialize() {
         MainContainer.setInSelectLobbyMenu(false);
         MainContainer.setInLobbyMenu(false);
-        MainContainer.setInGame(true);
+        MainContainer.setInGame(false);
+        MainContainer.setInGameEndMenu(true);
 
 
-        try {
-            InputStream is = getClass().getResourceAsStream("/Images/background.jpg");
-            if (is == null) {
-                throw new FileNotFoundException("Cannot find background image");
-            }
-
-            Image image = new Image(is);
-            BackgroundImage bgImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT);
-            borderPane.setBackground(new Background(bgImage));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        FxUtils.setBackgroundImage(borderPane);
 
         initializeTable();
 
@@ -189,7 +175,8 @@ public class GameEndController {
 
     @FXML
     public void closeBtnAction(ActionEvent action) throws IOException, InterruptedException {
-        FxUtils.closeCurrentModalWindowIfExist();
+        LobbyManager.getCurrentLobby().setGameObject(null);
+        FxManager.changeCurrentSceneToLobbyScene();
     }
 
 

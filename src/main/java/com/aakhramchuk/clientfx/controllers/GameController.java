@@ -1,10 +1,8 @@
 package com.aakhramchuk.clientfx.controllers;
 
 import com.aakhramchuk.clientfx.containers.MainContainer;
-import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.GamePlayer;
 import com.aakhramchuk.clientfx.objects.LobbyManager;
-import com.aakhramchuk.clientfx.objects.User;
 import com.aakhramchuk.clientfx.utils.ActionUtils;
 import com.aakhramchuk.clientfx.utils.FxUtils;
 import com.aakhramchuk.clientfx.utils.GameUtils;
@@ -20,7 +18,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -73,21 +70,10 @@ public class GameController {
     public void initialize() {
         MainContainer.setInSelectLobbyMenu(false);
         MainContainer.setInLobbyMenu(false);
+        MainContainer.setInGameEndMenu(false);
         MainContainer.setInGame(true);
 
-
-        try {
-            InputStream is = getClass().getResourceAsStream("/Images/background.jpg");
-            if (is == null) {
-                throw new FileNotFoundException("Cannot find background image");
-            }
-
-            Image image = new Image(is);
-            BackgroundImage bgImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT);
-            borderPane.setBackground(new Background(bgImage));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        FxUtils.setBackgroundImage(borderPane);
 
         LobbyManager.getCurrentLobby().getGameObject().getPlayers().forEach(player -> {
             if (player.getUsername().equals(MainContainer.getUser().getUsername())) {

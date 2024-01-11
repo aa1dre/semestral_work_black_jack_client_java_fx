@@ -31,6 +31,13 @@ public class User {
         setSurname(surname);
     }
 
+    public User(String username, String name, String surname, boolean isOnline) {
+        setUsername(username);
+        setName(name);
+        setSurname(surname);
+        setOnline(isOnline);
+    }
+
     public User(String username, String name, String surname) {
         setUsername(username);
         setName(name);

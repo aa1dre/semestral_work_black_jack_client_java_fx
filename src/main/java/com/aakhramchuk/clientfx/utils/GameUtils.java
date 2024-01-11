@@ -4,6 +4,7 @@ import com.aakhramchuk.clientfx.containers.MainContainer;
 import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.*;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,7 +87,10 @@ public class GameUtils {
             }
         } else {
             MainContainer.setOurTurnEvaluated(true);
-            System.out.println(deserializedReceivedMessage.getMessage());
+            Alert dataAlert = FxUtils.createErrorAlert(config.getString("text.alert_title.error"),
+                    connectionObject.getConfig().getString("text.alert_header_text.error_in_game_start_process"),
+                    deserializedReceivedMessage.getMessage());
+            dataAlert.showAndWait();
         }
     }
 
@@ -122,17 +126,13 @@ public class GameUtils {
             MainContainer.setOurTurnEvaluated(true);
 
             if (Platform.isFxApplicationThread()) {
-                FxManager.createGameEndModalWindow();
-                LobbyManager.getCurrentLobby().setGameObject(null);
-                FxManager.changeCurrentSceneToLobbyScene();
+                FxManager.changeCurrentSceneToGameEndScene();
             } else {
                 Platform.runLater(() -> {
                     try {
-                        FxManager.createGameEndModalWindow();
-                        LobbyManager.getCurrentLobby().setGameObject(null);
-                        FxManager.changeCurrentSceneToLobbyScene();
+                        FxManager.changeCurrentSceneToGameEndScene();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                     }
                 });
             }

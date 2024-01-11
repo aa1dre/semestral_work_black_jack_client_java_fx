@@ -52,34 +52,22 @@ public class RegistationController {
         Configuration config = MainContainer.getConnectionObject().getConfig();
 
         if (nameTf.getText().isEmpty() || nameTf.getText().isBlank()) {
-            Alert alert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_name_field"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.error_in_name_field"));
-            alert.showAndWait();
+            FxUtils.showEmptyNameAlert();
             return;
         }
 
         if (surnameTf.getText().isEmpty() || surnameTf.getText().isBlank()) {
-            Alert alert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_surname_field"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.error_in_surname_field"));
-            alert.showAndWait();
+            FxUtils.showEmptySurnameAlert();
             return;
         }
 
         if (loginTf.getText().isEmpty() || loginTf.getText().isBlank()) {
-            Alert alert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_login_field"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.error_in_login_field"));
-            alert.showAndWait();
+            FxUtils.showEmptyLoginAlert();
             return;
         }
 
         if (passwordTf.getText().isEmpty() || passwordTf.getText().isBlank()) {
-            Alert alert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_password_field"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.error_in_password_field"));
-            alert.showAndWait();
+            FxUtils.showEmptyPasswordAlert();
             return;
         }
 
@@ -93,28 +81,18 @@ public class RegistationController {
                     deserializedReceivedMessage.getMessage());
             alert.showAndWait();
         } else {
-            Alert alert = FxUtils.createInformationAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.information"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.information_about_registration"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.information_about_registration"));
-            alert.showAndWait();
+            FxUtils.showSuccessRegistrationAlert();
             FxUtils.closeCurrentModalWindowIfExist();
         }
     }
 
     @FXML
     public void initialize() {
-        try {
-            InputStream is = getClass().getResourceAsStream("/Images/background.jpg");
-            if (is == null) {
-                throw new FileNotFoundException("Cannot find background image");
-            }
-
-            Image image = new Image(is);
-            BackgroundImage bgImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT);
-            vBox.setBackground(new Background(bgImage));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        FxUtils.applyValidation(nameTf);
+        FxUtils.applyValidation(surnameTf);
+        FxUtils.applyValidation(loginTf);
+        FxUtils.applyValidation(passwordTf);
+        FxUtils.setBackgroundImage(vBox);
     }
 
 }

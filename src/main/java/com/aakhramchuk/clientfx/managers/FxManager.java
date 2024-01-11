@@ -4,6 +4,7 @@ import com.aakhramchuk.clientfx.BlackJackApplication;
 import com.aakhramchuk.clientfx.containers.FxContainer;
 import com.aakhramchuk.clientfx.controllers.EnterPasswordController;
 import com.aakhramchuk.clientfx.objects.Lobby;
+import com.aakhramchuk.clientfx.utils.FxUtils;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -58,10 +59,19 @@ public class FxManager {
         createModalWindow(new Scene(loader.load()), "Lobby creation");
     }
 
-    public static void createGameEndModalWindow() throws IOException {
+    public static void changeCurrentSceneToGameEndScene() throws IOException {
         FXMLLoader loader = new FXMLLoader(BlackJackApplication.class.getResource("gameEnd.fxml"));
+        FxContainer.setCurrentScene(new Scene(loader.load(), 800, 600));
 
-        createModalWindow(new Scene(loader.load()), "Game end");
+        Scene newScene = FxContainer.getCurrentScene();
+        Stage currentStage = FxContainer.getCurrentStage();
+
+        currentStage.setScene(newScene);
+
+        currentStage.sizeToScene();
+        currentStage.setResizable(false);
+        currentStage.setMinWidth(800);
+        currentStage.setMinHeight(500);
     }
 
     public static Scene getMainMenuScene() throws IOException {
@@ -95,8 +105,7 @@ public class FxManager {
         currentStage.setMinHeight(500);
     }
 
-
-        public static void changeCurrentSceneToLoginScene() throws IOException {
+    public static void changeCurrentSceneToLoginScene() throws IOException {
         Scene newScene = getLoginScene();
         Stage currentStage = FxContainer.getCurrentStage();
 

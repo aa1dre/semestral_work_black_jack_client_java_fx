@@ -1,23 +1,20 @@
 package com.aakhramchuk.clientfx.controllers;
 
 import com.aakhramchuk.clientfx.containers.MainContainer;
-import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.Lobby;
 import com.aakhramchuk.clientfx.objects.LobbyManager;
 import com.aakhramchuk.clientfx.objects.User;
 import com.aakhramchuk.clientfx.utils.ActionUtils;
+import com.aakhramchuk.clientfx.utils.FxUtils;
 import com.aakhramchuk.clientfx.utils.GameUtils;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class LobbyMenuController {
 
@@ -65,21 +62,11 @@ public class LobbyMenuController {
         MainContainer.setInSelectLobbyMenu(false);
         MainContainer.setInGame(false);
         MainContainer.setInLobbyMenu(true);
+        MainContainer.setInGameEndMenu(false);
 
         bindLobbyInfoToTextArea(LobbyManager.getCurrentLobby());
 
-        try {
-            InputStream is = getClass().getResourceAsStream("/Images/background.jpg");
-            if (is == null) {
-                throw new FileNotFoundException("Cannot find background image");
-            }
-
-            Image image = new Image(is);
-            BackgroundImage bgImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT);
-            borderPane.setBackground(new Background(bgImage));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        FxUtils.setBackgroundImage(borderPane);
 
         initializeTable();
     }
@@ -111,8 +98,6 @@ public class LobbyMenuController {
 
     @FXML
     public void startGameBtnAction(ActionEvent event) throws IOException, InterruptedException {
-        MainContainer.setInGame(true);
-        MainContainer.setInLobbyMenu(false);
         GameUtils.startGame();
     }
 

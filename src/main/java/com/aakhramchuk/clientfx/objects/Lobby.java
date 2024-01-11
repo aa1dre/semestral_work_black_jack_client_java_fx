@@ -104,7 +104,7 @@ public class Lobby {
     }
 
     public void addUser(User user) {
-        Platform.runLater(() -> usersList.add(user));
+        usersList.add(user);
     }
 
     public void removeUser(User user) {

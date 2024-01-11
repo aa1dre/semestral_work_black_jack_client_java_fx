@@ -24,8 +24,11 @@ public class MainContainer {
     private static final Object inGameLock = new Object();
     private static volatile boolean inGame = false;
 
+    private static final Object inGameEndMenuLock = new Object();
+    private static volatile boolean inGameEndMenu = false;
+
     private static final Object ourTurnEvaluatedLock = new Object();
-    private static volatile boolean ourTurnEvaluated = false;
+    private static volatile boolean ourTurnEvaluated = true;
 
     private static ConnectionObject connectionObject;
 
@@ -44,6 +47,18 @@ public class MainContainer {
     public static User getUser() {
         synchronized (userLock) {
             return user;
+        }
+    }
+
+    public static void setInGameEndMenu(boolean status) {
+        synchronized (inGameEndMenuLock) {
+            inGameEndMenu = status;
+        }
+    }
+
+    public static boolean isInGameEndMenu() {
+        synchronized (inGameEndMenuLock) {
+            return inGameEndMenu;
         }
     }
 

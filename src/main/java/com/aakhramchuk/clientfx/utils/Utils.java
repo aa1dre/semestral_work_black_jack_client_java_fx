@@ -32,6 +32,8 @@ public class Utils {
         String passGameCommand = connectionObject.getConfig().getString("message.game_pass_command");
         String turnGameCommand = connectionObject.getConfig().getString("message.game_turn_command");
         String endGameCommand = connectionObject.getConfig().getString("message.game_end_command");
+        String gameLeaveCommand = connectionObject.getConfig().getString("message.game_leave_command");
+        String disconnectCommand = connectionObject.getConfig().getString("message.disconnect_command");
 
         if (!message.startsWith(prefix)) {
             logger.error("Invalid message prefix");
@@ -60,8 +62,7 @@ public class Utils {
         } else if (payload.startsWith(takeGameCommand)) {
             deserializedMessage = payload.substring(takeGameCommand.length());
             messageType = takeGameCommand;
-        }
-          else if (payload.startsWith(passGameCommand)) {
+        } else if (payload.startsWith(passGameCommand)) {
             deserializedMessage = payload.substring(passGameCommand.length());
             messageType = passGameCommand;
         } else if (payload.startsWith(turnGameCommand)) {
@@ -70,8 +71,10 @@ public class Utils {
         } else if (payload.startsWith(endGameCommand)) {
             deserializedMessage = payload.substring(endGameCommand.length());
             messageType = endGameCommand;
-        }
-        else {
+        } else if (payload.startsWith(gameLeaveCommand)) {
+            deserializedMessage = payload.substring(gameLeaveCommand.length());
+            messageType = gameLeaveCommand;
+        } else {
             isGameMessage = false;
             isSuccess = payload.charAt(0) == '1';
 
@@ -117,19 +120,17 @@ public class Utils {
         return null;
     }
 
-    public static String deserializeStateAndUpdateLobbiesList(Configuration config, DeserializedMessage deserializedMessage) {
+    public static void deserializeStateAndUpdateLobbiesList(Configuration config, DeserializedMessage deserializedMessage) {
         if (deserializedMessage.isSucess()) {
             String prefixMenu = "MENU";
             String message = deserializedMessage.getMessage();
             if (message.startsWith(prefixMenu)) {
                 message = message.substring(prefixMenu.length());
                 parseAndUpdateLobbies(message);
-                return prefixMenu;
             } else {
                 LobbyManager.updateLobbies(new ArrayList<>());
             }
         }
-        return null;
     }
 
     public static void parseAndUpdateLobbies(String lobbiesString) {
@@ -200,7 +201,6 @@ public class Utils {
 
         String[] lobbyDetails = lobbyWithoutUsersAndGameInfo.substring(1, lobbyWithoutUsersAndGameInfo.length() - 1).split(";");
 
-        // Парсинг основной информации о лобби
         String lobbyId = lobbyDetails[0];
         String lobbyName = lobbyDetails[1];
         String maxPlayers = lobbyDetails[2];
@@ -208,33 +208,16 @@ public class Utils {
         String currentPlayers = lobbyDetails[4];
         boolean gameStarted = lobbyDetails[7].equals("1");
 
-        // Вывод информации о лобби
-        if (inLobby) {
-            if (!inGame) {
-                /*System.out.println(lobbyId + ". " + lobbyName);
-                System.out.println("max count of players: " + maxPlayers);
-                System.out.println("has password: " + hasPassword);
-                System.out.println("current count of players: " + currentPlayers);
-                System.out.println("admin: " + adminInfo);
-                System.out.println("creator: " + creatorInfo);
-                System.out.println("users in lobby:");*/
-/*                for (int i = 0; i < usersInLobby.size(); i++) {
-                    System.out.println(i + 1 + ". " + usersInLobby.get(i));
-                }*/
-            } else {
-                gameObject = new GameObject(gamePlayers);
-                System.out.println(gameObject);
-            }
+        if (inLobby && inGame) {
+            gameObject = new GameObject(gamePlayers);
         }
 
         Lobby newLobby = new Lobby(Integer.parseInt(lobbyId), lobbyName, Integer.parseInt(maxPlayers), hasPassword, Integer.parseInt(currentPlayers), adminUser != null ? adminUser.toString() : "none", creatorUser != null ? creatorUser.toString() : "none", gameStarted);
 
-        usersInLobby.forEach(user ->{
+        usersInLobby.forEach(user -> {
             user.setAdmin(user.equals(adminUser));
 
             user.setCreator(user.equals(creatorUser));
-
-            user.setOnline(false);
 
             newLobby.addUser(user);
         });
@@ -285,7 +268,6 @@ public class Utils {
 
         String trimmedGamePlayersString = gamePlayersString.substring(1, gamePlayersString.length() - 1);
 
-        // Разбор строки на отдельные игроков
         List<String> playerStrings = new ArrayList<>();
         int depth = 0;
         int start = 0;
@@ -322,9 +304,6 @@ public class Utils {
         return players;
     }
 
-
-
-
     private static GamePlayer parseGamePlayer(String playerInfo) {
         if (playerInfo.startsWith("[")) {
             playerInfo = playerInfo.substring(1, playerInfo.length() - 1);
@@ -352,16 +331,16 @@ public class Utils {
             details.add(currentSegment.toString());
         }
 
-        // Теперь у нас есть все детали, разделенные правильно.
         String login = details.get(0);
         String name = details.get(1);
         String surname = details.get(2);
-        boolean cardsVisible = details.get(3).equals("1");
+        String isOnline = details.get(3);
+        boolean cardsVisible = details.get(4).equals("1");
         List<String> cards = new ArrayList<>();
         int cardCount = 0;
 
         if (cardsVisible) {
-            String cardDetailString = details.get(4);
+            String cardDetailString = details.get(5);
             if (cardDetailString.startsWith("[")) {
                 cardDetailString = cardDetailString.substring(1, cardDetailString.length() - 1);
             }
@@ -371,13 +350,13 @@ public class Utils {
                 cardCount = cards.size();
             }
         } else {
-            cardCount = Integer.parseInt(details.get(4));
+            cardCount = Integer.parseInt(details.get(5));
         }
 
-        GamePlayer player = new GamePlayer(login, name, surname, cardsVisible, cards, cardCount);
+        GamePlayer player = new GamePlayer(login, name, surname, cardsVisible, cards, cardCount, "1".equals(isOnline));
 
         if (cardsVisible && !cards.isEmpty()) {
-            player.setCardsValue(Integer.parseInt(details.get(5)));
+            player.setCardsValue(Integer.parseInt(details.get(6)));
         }
 
         return player;
@@ -448,7 +427,7 @@ public class Utils {
             return null;
         }
         String[] userDetails = userInfo.substring(1, userInfo.length() - 1).split(";");
-        return new User(userDetails[0], userDetails[1], userDetails[2]);
+        return new User(userDetails[0], userDetails[1], userDetails[2], "1".equals(userDetails[3]));
     }
 
     public static void handleServerMessage(String message, String opcodeString) throws IOException {
@@ -459,6 +438,8 @@ public class Utils {
         String takeGameCommand = connectionObject.getConfig().getString("message.game_take_command");
         String passGameCommand = connectionObject.getConfig().getString("message.game_pass_command");
         String endGameCommand = connectionObject.getConfig().getString("message.game_end_command");
+        String gameLeaveCommand = connectionObject.getConfig().getString("message.game_leave_command");
+        String disconnectCommand = connectionObject.getConfig().getString("message.disconnect_command");
 
         DeserializedMessage deserializedReceivedMessage = Utils.confirmAndDeserializeErrorMessage(connectionObject, opcode, message, true);
         if (deserializedReceivedMessage.isSucess()) {
@@ -468,6 +449,10 @@ public class Utils {
                 String messageToParse = deserializedReceivedMessage.getMessage().substring(Constants.LOBBY_PREFIX_VALE.length());
                 LobbyManager.updateCurrentLobby(Utils.parseLobby(messageToParse, true, false));
             } else if (deserializedReceivedMessage.isGameMessage()) {
+                    if (MainContainer.isInGameEndMenu()) {
+                        MainContainer.setInGameEndMenu(false);
+                        dropToMainMenu();
+                    }
                     if (LobbyManager.getCurrentLobby() != null) {
                         if (deserializedReceivedMessage.getMessageType().equals(turnGameCommand)) {
                             if (LobbyManager.getCurrentLobby() != null && LobbyManager.getCurrentLobby().getGameObject() != null) {
@@ -480,8 +465,11 @@ public class Utils {
                                     }
                                 });
                             }
-                            MainContainer.setInGame(true);
-                        } else if (deserializedReceivedMessage.getMessageType().equals(startGameCommand)
+                        } else if (deserializedReceivedMessage.getMessageType().equals(gameLeaveCommand) || deserializedReceivedMessage.getMessageType().equals(disconnectCommand)) {
+                            MainContainer.setInGame(false);
+                            dropToMainMenu();
+                        }
+                        else if (deserializedReceivedMessage.getMessageType().equals(startGameCommand)
                                 || deserializedReceivedMessage.getMessageType().equals(takeGameCommand)
                                 || deserializedReceivedMessage.getMessageType().equals(passGameCommand)) {
                             if (LobbyManager.getCurrentLobby().getGameObject() == null) {
@@ -523,6 +511,22 @@ public class Utils {
                 }
             }
         }
+
+    private static void dropToMainMenu() throws IOException {
+        MainContainer.setInLobbyMenu(true);
+        LobbyManager.getCurrentLobby().setGameObject(null);
+        if (Platform.isFxApplicationThread()) {
+            FxManager.changeCurrentSceneToLobbyScene();
+        } else {
+            Platform.runLater(() -> {
+                try {
+                    FxManager.changeCurrentSceneToLobbyScene();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
 
 
     public static String getCardImagePath(String cardCode) {

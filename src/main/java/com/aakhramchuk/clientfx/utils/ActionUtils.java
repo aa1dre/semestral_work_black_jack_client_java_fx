@@ -8,7 +8,6 @@ import javafx.scene.control.Alert;
 import org.apache.commons.configuration2.Configuration;
 
 import java.io.IOException;
-import java.util.Scanner;
 
 import static com.aakhramchuk.clientfx.objects.Constants.LOBBY_PREFIX_VALE;
 
@@ -30,6 +29,7 @@ public class ActionUtils {
                     config.getString("text.alert_header_text.information_about_logout"),
                     deserializedReceivedMessage.getMessage());
             alert.showAndWait();
+            ServerUtils.stopSchedulerServices();
             FxManager.changeCurrentSceneToLoginScene();
         } else {
             Alert alert = FxUtils.createErrorAlert(config.getString("text.alert_title.error"),
@@ -44,7 +44,6 @@ public class ActionUtils {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String lobbyJoinOpcode = connectionObject.getConfig().getString("message.lobby_create_opcode");
         Configuration config = connectionObject.getConfig();
-        Scanner scanner = connectionObject.getScanner();
 
         String lobbyCreateString = (hasPassword ? Lobby.toCreateString(lobbyName, lobbyMaxCountOfPlayers, true, password) : Lobby.toCreateStringWithoutPassword(lobbyName, lobbyMaxCountOfPlayers));
 
@@ -54,10 +53,7 @@ public class ActionUtils {
 
         if (deserializedReceivedMessage.isSucess()) {
             Utils.parseAndUpdateLobbies(deserializedReceivedMessage.getMessage());
-            Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
-                    config.getString("text.alert_header_text.information_about_lobby_creation"),
-                    config.getString("text.alert_content_text.information_about_lobby_creation"));
-            alert.showAndWait();
+            FxUtils.showSuccessLobbyCreationAlert();
             return true;
         } else {
             Alert alert = FxUtils.createErrorAlert(config.getString("text.alert_title.error"),
@@ -87,18 +83,12 @@ public class ActionUtils {
         } else {
             if (isJoin) {
                 selectedLobby = Utils.parseLobby(deserializedReceivedMessage.getMessage().substring(LOBBY_PREFIX_VALE.length()), true, false);
-                Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
-                        config.getString("text.alert_header_text.information_about_lobby_join"),
-                        config.getString("text.alert_content_text.information_about_lobby_join"));
-                alert.showAndWait();
+                FxUtils.showSucessLobbyJoinAlert();
                 LobbyManager.setCurrentLobby(selectedLobby);
                 FxUtils.closeCurrentModalWindowIfExist();
                 FxManager.changeCurrentSceneToLobbyScene();
             } else {
-                Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
-                        config.getString("text.alert_header_text.information_about_lobby_deletion"),
-                        config.getString("text.alert_content_text.information_about_lobby_deletion"));
-                alert.showAndWait();
+                FxUtils.showSuccessLobbyDeleteAlert();
                 LobbyManager.setCurrentLobby(null);
                 Utils.deserializeStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
                 FxUtils.closeCurrentModalWindowIfExist();
@@ -121,10 +111,7 @@ public class ActionUtils {
                     deserializedReceivedMessage.getMessage());
             alert.showAndWait();
         } else {
-            Alert alert = FxUtils.createInformationAlert(config.getString("text.alert_title.information"),
-                    config.getString("text.alert_header_text.information_about_lobby_leave"),
-                    config.getString("text.alert_content_text.information_about_lobby_leave"));
-            alert.showAndWait();
+            FxUtils.showSuccessLobbyLeaveAlert();
             LobbyManager.setCurrentLobby(null);
             Utils.deserializeStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
             FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());

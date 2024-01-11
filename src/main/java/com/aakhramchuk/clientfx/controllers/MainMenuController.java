@@ -68,19 +68,9 @@ public class MainMenuController {
         MainContainer.setInSelectLobbyMenu(true);
         MainContainer.setInLobbyMenu(false);
         MainContainer.setInGame(false);
+        MainContainer.setInGameEndMenu(false);
 
-        try {
-            InputStream is = getClass().getResourceAsStream("/Images/background.jpg");
-            if (is == null) {
-                throw new FileNotFoundException("Cannot find background image");
-            }
-
-            Image image = new Image(is);
-            BackgroundImage bgImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT);
-            borderPane.setBackground(new Background(bgImage));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        FxUtils.setBackgroundImage(borderPane);
 
         initializeTable();
     }
@@ -127,10 +117,7 @@ public class MainMenuController {
     @FXML
     public void deleteLobbyBtnAction(ActionEvent event) throws IOException, InterruptedException {
         if (lobbyTableSelection == null || lobbyTableSelection.isEmpty() || lobbyTableSelection.getSelectedItem() == null) {
-            Alert alert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_lobby_delete_process"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.error_in_lobby_delete_process_select"));
-            alert.showAndWait();
+            FxUtils.showErrorInLobbyDeleteProcessAlert();
             return;
         }
 
