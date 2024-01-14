@@ -22,6 +22,19 @@ public class Lobby {
     private BooleanProperty gameStarted = new SimpleBooleanProperty();
     private GameObject gameObject;
 
+
+    /**
+     * Initializes a new Lobby object with the specified properties.
+     *
+     * @param id             The unique identifier of the lobby.
+     * @param name           The name of the lobby.
+     * @param maxPlayers     The maximum number of players allowed in the lobby.
+     * @param hasPassword    A boolean indicating whether the lobby is password-protected.
+     * @param currentPlayers The current number of players in the lobby.
+     * @param adminInfo      Information about the lobby's admin.
+     * @param creatorInfo    Information about the creator of the lobby.
+     * @param gameStarted    A boolean indicating whether the game in the lobby has started.
+     */
     public Lobby(int id, String name, int maxPlayers, boolean hasPassword,
                  int currentPlayers, String adminInfo, String creatorInfo, boolean gameStarted) {
         setId(id);
@@ -34,6 +47,13 @@ public class Lobby {
         setGameStarted(gameStarted);
     }
 
+    /**
+     * Initializes a new Lobby object with default values and specified properties.
+     *
+     * @param name        The name of the lobby.
+     * @param maxPlayers  The maximum number of players allowed in the lobby.
+     * @param hasPassword A boolean indicating whether the lobby is password-protected.
+     */
     public Lobby(String name, int maxPlayers, boolean hasPassword) {
         this(0, name, maxPlayers, hasPassword, 0, "", "", false);
     }
@@ -82,31 +102,72 @@ public class Lobby {
     public GameObject getGameObject() { return gameObject; }
     public void setGameObject(GameObject gameObject) { this.gameObject = gameObject; }
 
+
+    /**
+     * Generates an action string representing lobby information for a client action, including password if provided.
+     *
+     * @param password The lobby password (if applicable).
+     * @return The formatted action string.
+     */
     public String toActionString(String password) {
         return getName() + ";" + (getHasPassword() ? "1" : "0") + (password == null || password.isEmpty() ? "" : ";" + password);
     }
 
+    /**
+     * Generates a formatted lobby creation string.
+     *
+     * @param name       The name of the lobby.
+     * @param maxPlayers The maximum number of players allowed in the lobby.
+     * @param hasPassword Indicates whether the lobby has a password.
+     * @param password   The lobby's password (null or empty if no password is set).
+     * @return The formatted lobby creation string.
+     */
     public static String toCreateString(String name, int maxPlayers, boolean hasPassword, String password) {
         return name + ";" + maxPlayers + ";" + (hasPassword ? "1" : "0") + (password == null || password.isEmpty() ? "" : ";" + password);
     }
 
+    /**
+     * Checks if the lobby has a password.
+     *
+     * @return true if the lobby has a password, false otherwise.
+     */
     public static String toCreateStringWithoutPassword(String name, int maxPlayers) {
         return toCreateString(name, maxPlayers, false, null);
     }
 
+    /**
+     * Checks if the lobby has a password.
+     *
+     * @return true if the lobby has a password, false otherwise.
+     */
     public boolean hasPassword() {
         return getHasPassword();
     }
 
+    /**
+     * Updates the lobby's user list with the provided list of users.
+     *
+     * @param users The list of users to update the lobby's user list.
+     */
     public void updateUsersList(ObservableList<User> users) {
         usersList.clear();
         usersList.addAll(users);
     }
 
+    /**
+     * Adds a user to the lobby's user list.
+     *
+     * @param user The user to add to the lobby.
+     */
     public void addUser(User user) {
         usersList.add(user);
     }
 
+    /**
+     * Retrieves the list of users in the lobby.
+     *
+     * @return The observable list of users in the lobby.
+     */
     public ObservableList<User> getUsersList() {
         return usersList;
     }

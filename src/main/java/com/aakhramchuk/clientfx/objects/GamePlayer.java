@@ -23,6 +23,18 @@ public class GamePlayer {
     private IntegerProperty cardsValue = new SimpleIntegerProperty(-1);
     private BooleanProperty isOnline = new SimpleBooleanProperty();
 
+
+    /**
+     * Initializes a new GamePlayer object with the specified properties.
+     *
+     * @param username      The username of the player.
+     * @param name          The name of the player.
+     * @param surname       The surname of the player.
+     * @param cardsVisible  A boolean indicating whether the player's cards are visible.
+     * @param cards         A list of card strings held by the player.
+     * @param cardCount     The count of cards held by the player.
+     * @param isOnline      A boolean indicating whether the player is online.
+     */
     public GamePlayer(String username, String name, String surname, boolean cardsVisible, List<String> cards, int cardCount, boolean isOnline) {
         setUsername(username);
         setName(name);
@@ -33,6 +45,11 @@ public class GamePlayer {
         setOnline(isOnline);
     }
 
+    /**
+     * Updates the properties of the GamePlayer with the properties of another GamePlayer.
+     *
+     * @param player The GamePlayer whose properties are used for updating.
+     */
     public void updatePlayer(GamePlayer player) {
         setCardsVisible(player.isCardsVisible());
         setCards(player.getCards());

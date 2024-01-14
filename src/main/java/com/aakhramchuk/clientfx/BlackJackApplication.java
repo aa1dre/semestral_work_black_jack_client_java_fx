@@ -24,6 +24,13 @@ public class BlackJackApplication extends Application {
 
     private static final Logger logger = LogManager.getLogger(BlackJackApplication.class);
 
+    /**
+     * The start method is called when the JavaFX application is launched.
+     * It initializes the main application window and sets the initial scene to the login scene.
+     *
+     * @param stage The primary stage for this application.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public void start(Stage stage) throws IOException {
         stage.setResizable(false);
@@ -36,16 +43,32 @@ public class BlackJackApplication extends Application {
         FxContainer.setCurrentStage(stage);
     }
 
+    /**
+     * The main method of the application.
+     * It is the entry point of the application and is called when the program starts.
+     * It initiates the connection to the server and starts the application.
+     *
+     * @param args Command-line arguments (not used in this application).
+     */
     public static void main(String[] args) {
         connectToServerAndRunApplication();
     }
 
+    /**
+     * Closes the application.
+     * It stops any scheduler services and exits the JavaFX application.
+     */
     public static void closeApplication() {
         ServerUtils.stopSchedulerServices();
         Platform.exit();
         System.exit(0);
     }
 
+    /**
+     * Connects to the server and runs the application.
+     * It reads the server configuration from the "config.properties" file, establishes a socket connection,
+     * and sets up the necessary components for communication with the server.
+     */
     private static void connectToServerAndRunApplication() {
         logger.debug("Receiving configuration from config.properties");
         Configurations configs = new Configurations();

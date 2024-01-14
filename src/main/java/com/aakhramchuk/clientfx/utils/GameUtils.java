@@ -16,6 +16,12 @@ import java.util.List;
 public class GameUtils {
     private static final Logger logger = LogManager.getLogger(GameUtils.class);
 
+    /**
+     * Starts a game, sends the appropriate command to the server, and evaluates the response.
+     *
+     * @throws InterruptedException If the thread is interrupted during execution.
+     * @throws IOException          If an I/O error occurs while communicating with the server.
+     */
     public static void startGame() throws InterruptedException, IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String gameActionOpcode = connectionObject.getConfig().getString("message.game_action_opcode");
@@ -26,6 +32,13 @@ public class GameUtils {
         MainContainer.setOurTurnEvaluated(true);
     }
 
+
+    /**
+     * Passes the turn in the current game, sends the corresponding command to the server, and evaluates the response.
+     *
+     * @throws InterruptedException If the thread is interrupted during execution.
+     * @throws IOException          If an I/O error occurs while communicating with the server.
+     */
     public static void passAction() throws InterruptedException, IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String gameActionOpcode = connectionObject.getConfig().getString("message.game_action_opcode");
@@ -36,6 +49,12 @@ public class GameUtils {
         MainContainer.setOurTurnEvaluated(true);
     }
 
+    /**
+     * Takes the turn in the current game, sends the corresponding command to the server, and evaluates the response.
+     *
+     * @throws InterruptedException If the thread is interrupted during execution.
+     * @throws IOException          If an I/O error occurs while communicating with the server.
+     */
     public static void takeAction() throws InterruptedException, IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String gameActionOpcode = connectionObject.getConfig().getString("message.game_action_opcode");
@@ -46,6 +65,15 @@ public class GameUtils {
         MainContainer.setOurTurnEvaluated(true);
     }
 
+    /**
+     * Private helper method to evaluate a game action command.
+     *
+     * @param gameActionOpcode The opcode for game actions.
+     * @param command           The specific game action command to be evaluated.
+     * @param config            The configuration object containing game-related settings.
+     * @throws InterruptedException If the thread is interrupted during execution.
+     * @throws IOException          If an I/O error occurs while communicating with the server.
+     */
     private static void evaluateGameAction(String gameActionOpcode, String command, Configuration config) throws InterruptedException, IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String passCommand = connectionObject.getConfig().getString("message.game_pass_command");
@@ -56,6 +84,7 @@ public class GameUtils {
         MainContainer.setInGame(true);
         MainContainer.setOurTurnEvaluated(false);
 
+        // Create the message to be sent to the server
         String sentMessage = Utils.createMessage(config, gameActionOpcode, command);
         logger.info("QUEUED: " + sentMessage);
         MainContainer.getOutgoingMessageQueue().put(sentMessage);
@@ -68,14 +97,19 @@ public class GameUtils {
         logger.info("RECEIVED: " + response);
 
         String messageToDeserialize;
+
+        // Check if the response starts with the same command
         if (response.startsWith(command)) {
             messageToDeserialize = response.substring(command.length() + 1);
         } else {
             messageToDeserialize = response;
         }
+
+        // Deserialize the received message
         DeserializedMessage deserializedReceivedMessage = Utils.confirmAndDeserializeErrorMessage(connectionObject, gameActionOpcode, messageToDeserialize, false);
         if (deserializedReceivedMessage.isSucess()) {
             if (deserializedReceivedMessage.getMessageType().equals(command)) {
+                // Process game start command response
                 String message = deserializedReceivedMessage.getMessage().substring(1);
                 message = message.substring(message.indexOf(';') + 1);
                 if (LobbyManager.getCurrentLobby().getGameObject() == null) {
@@ -84,10 +118,12 @@ public class GameUtils {
                     LobbyManager.getCurrentLobby().getGameObject().setPlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
                 }
                 FxManager.changeCurrentSceneToGameScene();
+                // Handle any pending game actions
                 while (!MainContainer.getGameQueue().isEmpty()) {
                     Utils.handleServerMessage(MainContainer.getGameQueue().take(), "message.game_action_opcode");
                 }
             } else if (deserializedReceivedMessage.getMessageType().equals(endGameCommand)) {
+                // Handle end game scenario
                 endGame(deserializedReceivedMessage.getMessage());
             }
         } else {
@@ -113,6 +149,12 @@ public class GameUtils {
         }
     }
 
+    /**
+     * Handles the end of a game, processes the game result message, and updates the game state accordingly.
+     *
+     * @param message The game result message received from the server.
+     * @throws IOException If an I/O error occurs while processing the game result.
+     */
     public static void endGame(String message) throws IOException {
         if (message != null) {
             String messageToEvaluate = message.substring(1);
@@ -136,8 +178,10 @@ public class GameUtils {
             }
 
             if (Platform.isFxApplicationThread()) {
+                // Update players and winners in the current lobby's game object
                 LobbyManager.getCurrentLobby().getGameObject().updatePlayers(players, true);
             } else {
+                // Run the update on the JavaFX application thread
                 Platform.runLater(() -> LobbyManager.getCurrentLobby().getGameObject().updatePlayers(players, true));
             }
 
@@ -145,8 +189,10 @@ public class GameUtils {
             MainContainer.setOurTurnEvaluated(true);
 
             if (Platform.isFxApplicationThread()) {
+                // Change the current scene to the game end scene
                 FxManager.changeCurrentSceneToGameEndScene();
             } else {
+                // Run the scene change on the JavaFX application thread
                 Platform.runLater(() -> {
                     try {
                         FxManager.changeCurrentSceneToGameEndScene();

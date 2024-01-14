@@ -38,19 +38,33 @@ public class LobbyCreationController {
     @FXML
     private Button confirmButton;
 
+    /**
+     * Handle the cancel button click event to close the current modal window.
+     *
+     * @param event The ActionEvent triggered by the cancel button.
+     * @throws IOException If an I/O error occurs.
+     */
     @FXML
     public void cancelButtonAction(ActionEvent event) throws IOException {
         FxUtils.closeCurrentModalWindowIfExist();
     }
 
+    /**
+     * Handle the confirm button click event to create a lobby with specified parameters.
+     *
+     * @param event The ActionEvent triggered by the confirm button.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void registrationButtonAction(ActionEvent event) throws IOException, InterruptedException {
+        // Validate and process lobby creation parameters
         if (nameTf.getText().isEmpty() || nameTf.getText().isBlank()) {
             FxUtils.showEmptyNameAlert();
             return;
         }
 
-        if (maxCountOfPlayersTf.getText().isEmpty() || !maxCountOfPlayersTf.getText().matches("\\d+") || Integer.parseInt(maxCountOfPlayersTf.getText()) <= 0) {
+        if (maxCountOfPlayersTf.getText().isEmpty() || !maxCountOfPlayersTf.getText().matches("\\d+") || maxCountOfPlayersTf.getText().length() > 8 || Integer.parseInt(maxCountOfPlayersTf.getText()) <= 0) {
             FxUtils.showEmptyMaxCountOfPlayersAlert();
             return;
         }
@@ -62,34 +76,44 @@ public class LobbyCreationController {
             }
         }
 
+        // Create a lobby with specified parameters and close the modal window if successful
         if (ActionUtils.createLobby(nameTf.getText(), Integer.parseInt(maxCountOfPlayersTf.getText()), passwordChbx.isSelected(), passwordChbx.isSelected() ? passwordTf.getText() : null)) {
             FxUtils.closeCurrentModalWindowIfExist();
         }
 
     }
 
+
+    /**
+     * Initialize the lobby creation screen.
+     */
     @FXML
     public void initialize() {
+        // Apply input validation to text fields
         FxUtils.applyValidation(nameTf);
         FxUtils.applyValidation(maxCountOfPlayersTf);
         FxUtils.applyValidation(passwordTf);
 
+        // Initialize password-related fields based on the checkbox selection
         passwordTf.setDisable(!passwordChbx.isSelected());
         passwordTf.setVisible(passwordChbx.isSelected());
         passwordLbl.setOpacity(passwordChbx.isSelected() ? 1.0 : 0.0);
 
+        // Add a listener to toggle password-related fields based on the checkbox selection
         passwordChbx.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
             passwordTf.setDisable(!isNowSelected);
             passwordTf.setVisible(isNowSelected);
             passwordLbl.setOpacity(isNowSelected ? 1.0 : 0.0);
         });
 
+        // Ensure that maxCountOfPlayersTf only accepts numeric input
         maxCountOfPlayersTf.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
                 maxCountOfPlayersTf.setText(newValue.replaceAll("[^\\d]", ""));
             }
         });
 
+        // Set a background image for the VBox
         FxUtils.setBackgroundImage(vBox);
     }
 

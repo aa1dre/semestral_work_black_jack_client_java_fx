@@ -14,16 +14,25 @@ public class User {
     private BooleanProperty isAdmin = new SimpleBooleanProperty();
     private BooleanProperty isOnline = new SimpleBooleanProperty();
 
+    /**
+     * Creates a new User instance with the specified username and password.
+     *
+     * @param username The username of the user.
+     * @param password The password of the user.
+     */
     public User(String username, String password) {
         setUsername(username);
         setPassword(password);
     }
 
-    @Override
-    public String toString() {
-        return username.get() + " - " + name.get() + " " + surname.get();
-    }
-
+    /**
+     * Creates a new User instance with the specified username, password, name, and surname.
+     *
+     * @param username The username of the user.
+     * @param password The password of the user.
+     * @param name     The name of the user.
+     * @param surname  The surname of the user.
+     */
     public User(String username, String password, String name, String surname) {
         setUsername(username);
         setPassword(password);
@@ -31,6 +40,14 @@ public class User {
         setSurname(surname);
     }
 
+    /**
+     * Creates a new User instance with the specified username, name, surname, and online status.
+     *
+     * @param username  The username of the user.
+     * @param name      The name of the user.
+     * @param surname   The surname of the user.
+     * @param isOnline  The online status of the user.
+     */
     public User(String username, String name, String surname, boolean isOnline) {
         setUsername(username);
         setName(name);
@@ -38,16 +55,33 @@ public class User {
         setOnline(isOnline);
     }
 
+    /**
+     * Creates a new User instance with the specified username, name, and surname.
+     *
+     * @param username The username of the user.
+     * @param name     The name of the user.
+     * @param surname  The surname of the user.
+     */
     public User(String username, String name, String surname) {
         setUsername(username);
         setName(name);
         setSurname(surname);
     }
 
+    /**
+     * Returns a string representation of the user for login purposes.
+     *
+     * @return A string containing the username and password.
+     */
     public String toStringLogin() {
         return getUsername() + ";" + getPassword();
     }
 
+    /**
+     * Returns a string representation of the user for registration purposes.
+     *
+     * @return A string containing the username, password, name, and surname.
+     */
     public String toStringRegistration() {
         return getUsername() + ";" + getPassword() + ";" + getName() + ";" + getSurname();
     }
@@ -87,6 +121,12 @@ public class User {
     public void setOnline(boolean isOnline) { this.isOnline.set(isOnline); }
     public BooleanProperty onlineProperty() { return isOnline; }
 
+    /**
+     * Compares this User object to another object for equality.
+     *
+     * @param obj The object to compare with.
+     * @return True if the objects are equal; otherwise, false.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -96,8 +136,23 @@ public class User {
         return username != null ? username.get().equals(user.getUsername()) : user.getUsername() == null;
     }
 
+    /**
+     * Computes the hash code for this User object.
+     *
+     * @return The hash code value.
+     */
     @Override
     public int hashCode() {
         return username != null ? username.get().hashCode() : 0;
+    }
+
+    /**
+     * Returns a string representation of the user, showing the username, name, and surname.
+     *
+     * @return A string containing the username - name, and surname.
+     */
+    @Override
+    public String toString() {
+        return username.get() + " - " + name.get() + " " + surname.get();
     }
 }

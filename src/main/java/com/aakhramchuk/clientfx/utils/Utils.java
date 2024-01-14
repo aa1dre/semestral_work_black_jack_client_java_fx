@@ -15,10 +15,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.aakhramchuk.clientfx.objects.Constants.MENU_PREFIX_VALUE;
+
 public class Utils {
 
     private static final Logger logger = LogManager.getLogger(Utils.class);
 
+    /**
+     * Creates a formatted message string based on a configuration, opcode, and message content.
+     *
+     * @param config The configuration object containing message formatting settings.
+     * @param opcode The operation code to be included in the message.
+     * @param message The actual message content.
+     * @return A formatted message string.
+     */
     public static String createMessage(Configuration config, String opcode, String message) {
         String prefix = config.getString("message.prefix");
         String length = String.format("%04d", message.length());
@@ -26,6 +36,13 @@ public class Utils {
         return prefix + opcode + length + message;
     }
 
+    /**
+     * Confirms the validity of a message based on its prefix and length.
+     *
+     * @param connectionObject The connection object containing configuration details.
+     * @param message The message to be validated.
+     * @return true if the message is valid, false otherwise.
+     */
     public static boolean confirmMessage(ConnectionObject connectionObject, String message) {
         Configuration config = connectionObject.getConfig();
         String prefix = config.getString("message.prefix");
@@ -33,7 +50,6 @@ public class Utils {
         if (!message.startsWith(prefix)) {
             logger.error("Invalid message prefix");
         }
-
 
         int declaredLength = Integer.parseInt(message.substring(prefix.length() + 2, prefix.length() + 6));
         String payload = message.substring(prefix.length() + 6);
@@ -44,6 +60,16 @@ public class Utils {
         return true;
     }
 
+    /**
+     * Confirms, validates, and deserializes a message received from the server.
+     * This method includes special handling for ping messages and different types of game commands.
+     *
+     * @param connectionObject The connection object for configuration and server communication.
+     * @param originalOpcode The original opcode sent in the request for which this is the response.
+     * @param message The message received from the server.
+     * @param isPing A flag indicating if the message is a ping message.
+     * @return A DeserializedMessage object representing the received message.
+     */
     public static DeserializedMessage confirmAndDeserializeErrorMessage(ConnectionObject connectionObject, String originalOpcode, String message, boolean isPing ) {
         Configuration config = connectionObject.getConfig();
         String prefix = config.getString("message.prefix");
@@ -120,6 +146,13 @@ public class Utils {
         return deserializedMessageObject;
     }
 
+    /**
+     * Deserializes the login state and updates the lobbies list based on the received message.
+     *
+     * @param config The configuration object.
+     * @param deserializedMessage The deserialized message object containing the server response.
+     * @return A string indicating the type of message (e.g., menu, lobby, game) or null if not applicable.
+     */
     public static String deserializeLoginStateAndUpdateLobbiesList(Configuration config, DeserializedMessage deserializedMessage) {
         if (deserializedMessage.isSucess() && deserializedMessage.getOpcode() != null && deserializedMessage.getOpcode().equals(config.getString("message.login_opcode"))) {
             String prefixMenu = config.getString("message.menu_prefix");
@@ -149,12 +182,17 @@ public class Utils {
         return null;
     }
 
+    /**
+     * Deserializes the state and updates the lobbies list.
+     *
+     * @param config The configuration object.
+     * @param deserializedMessage The deserialized message object containing the server response.
+     */
     public static void deserializeStateAndUpdateLobbiesList(Configuration config, DeserializedMessage deserializedMessage) {
         if (deserializedMessage.isSucess()) {
-            String prefixMenu = "MENU";
             String message = deserializedMessage.getMessage();
-            if (message.startsWith(prefixMenu)) {
-                message = message.substring(prefixMenu.length());
+            if (message.startsWith(MENU_PREFIX_VALUE)) {
+                message = message.substring(MENU_PREFIX_VALUE.length());
                 parseAndUpdateLobbies(message);
             } else {
                 LobbyManager.updateLobbies(new ArrayList<>());
@@ -162,6 +200,11 @@ public class Utils {
         }
     }
 
+    /**
+     * Parses a string representation of lobbies and updates the lobby list.
+     *
+     * @param lobbiesString The string representation of lobbies.
+     */
     public static void parseAndUpdateLobbies(String lobbiesString) {
         List<String> lobbies = splitLobbies(lobbiesString);
 
@@ -172,6 +215,12 @@ public class Utils {
         LobbyManager.updateLobbies(lobbiesList);
     }
 
+    /**
+     * Splits a string representation of lobbies into individual lobby strings.
+     *
+     * @param lobbiesString The string representation of multiple lobbies.
+     * @return A list of strings, each representing a single lobby.
+     */
     private static List<String> splitLobbies(String lobbiesString) {
         List<String> lobbies = new ArrayList<>();
         int depth = 0;
@@ -195,6 +244,14 @@ public class Utils {
         return lobbies;
     }
 
+    /**
+     * Sends a message to the server and waits for a response.
+     *
+     * @param opcode The opcode of the message being sent.
+     * @param sentMessage The message being sent to the server.
+     * @return A DeserializedMessage object representing the server's response.
+     * @throws InterruptedException If the thread is interrupted while waiting for the response.
+     */
     public static DeserializedMessage sendMesageAndTakeResponse(String opcode, String sentMessage) throws InterruptedException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         logger.info("QUEUED: " + sentMessage);
@@ -207,6 +264,14 @@ public class Utils {
         return Utils.confirmAndDeserializeErrorMessage(connectionObject, opcode, response, false);
     }
 
+    /**
+     * Parses a lobby string to create a Lobby object.
+     *
+     * @param lobby The string representation of the lobby.
+     * @param inLobby A flag indicating if the lobby is currently active.
+     * @param inGame A flag indicating if a game is currently active in the lobby.
+     * @return A new Lobby object constructed from the parsed string.
+     */
     static Lobby parseLobby(String lobby, boolean inLobby, boolean inGame) {
         String[] userParts = extractUsers(lobby, inLobby, inGame);
         User adminUser = parseUserInfo(userParts[0]);
@@ -258,10 +323,15 @@ public class Utils {
         return newLobby;
     }
 
+    /**
+     * Parses a string representation of game players at the start of a game.
+     *
+     * @param gamePlayersString The string representation of game players.
+     * @return A list of GamePlayer objects representing the players at the start of the game.
+     */
     public static List<GamePlayer> parseStartGamePlayers(String gamePlayersString) {
         List<GamePlayer> players = new ArrayList<>();
 
-        // Разбор строки на отдельные игроков
         List<String> playerStrings = new ArrayList<>();
         int depth = 0;
         int start = 0;
@@ -280,7 +350,6 @@ public class Utils {
             }
         }
 
-        // Обработка остальных игроков
         for (String playerString : playerStrings) {
             GamePlayer player = parseGamePlayer(playerString);
             players.add(player);
@@ -289,6 +358,12 @@ public class Utils {
         return players;
     }
 
+    /**
+     * Parses a string representation of game players during a game.
+     *
+     * @param gamePlayersString The string representation of game players during a game.
+     * @return A list of GamePlayer objects representing the players during the game.
+     */
     public static List<GamePlayer> parseGamePlayers(String gamePlayersString) {
         List<GamePlayer> players = new ArrayList<>();
         if (gamePlayersString.equals("[]")) {
@@ -333,6 +408,13 @@ public class Utils {
         return players;
     }
 
+
+    /**
+     * Parses information about a single game player.
+     *
+     * @param playerInfo The string representation of a single game player's information.
+     * @return A GamePlayer object created from the parsed information.
+     */
     private static GamePlayer parseGamePlayer(String playerInfo) {
         if (playerInfo.startsWith("[")) {
             playerInfo = playerInfo.substring(1, playerInfo.length() - 1);
@@ -391,6 +473,12 @@ public class Utils {
         return player;
     }
 
+    /**
+     * Parses users in a lobby from a string representation.
+     *
+     * @param usersString The string representation of users in a lobby.
+     * @return A list of User objects representing the users in the lobby.
+     */
     private static List<User> parseUsersInLobby(String usersString) {
         List<User> users = new ArrayList<>();
         if (usersString.equals("[]")) {
@@ -420,6 +508,14 @@ public class Utils {
         return users;
     }
 
+    /**
+     * Extracts user information from a lobby string.
+     *
+     * @param lobby The string representation of the lobby.
+     * @param inLobby A flag indicating if the lobby is currently active.
+     * @param inGame A flag indicating if a game is currently active in the lobby.
+     * @return An array of strings, each containing user information.
+     */
     private static String[] extractUsers(String lobby, boolean inLobby, boolean inGame) {
         int firstBracket = lobby.indexOf('[');
         int secondBracket = lobby.indexOf('[', firstBracket + 1);
@@ -436,6 +532,13 @@ public class Utils {
         return new String[]{adminInfo, creatorInfo, usersInfo, gameInfo};
     }
 
+    /**
+     * Finds the index of the closing bracket that matches the opening bracket at the given start index.
+     *
+     * @param str The string in which to find the closing bracket.
+     * @param start The index of the opening bracket.
+     * @return The index of the corresponding closing bracket.
+     */
     private static int findClosingBracket(String str, int start) {
         int depth = 1;
         for (int i = start + 1; i < str.length(); i++) {
@@ -451,6 +554,12 @@ public class Utils {
         return -1;
     }
 
+    /**
+     * Parses user information from a string representation.
+     *
+     * @param userInfo The string representation of a user's information.
+     * @return A User object created from the parsed information.
+     */
     public static User parseUserInfo(String userInfo) {
         if (userInfo.equals("[]")) {
             return null;
@@ -459,6 +568,14 @@ public class Utils {
         return new User(userDetails[0], userDetails[1], userDetails[2], "1".equals(userDetails[3]));
     }
 
+    /**
+     * Handles messages received from the server by parsing and responding appropriately based on the opcode.
+     * This method orchestrates different actions depending on the message type (e.g., updating lobbies, handling game state changes).
+     *
+     * @param message The message received from the server to be handled.
+     * @param opcodeString The opcode associated with the message for identifying the type of message.
+     * @throws IOException If an IO error occurs during the handling of the message.
+     */
     public static void handleServerMessage(String message, String opcodeString) throws IOException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String opcode = connectionObject.getConfig().getString(opcodeString);
@@ -591,6 +708,13 @@ public class Utils {
             }
         }
 
+    /**
+     * Transitions the user interface back to the main lobby menu.
+     * This method is typically called when exiting a game or lobby, ensuring the user is returned to the main menu.
+     * It handles the transition both on the JavaFX application thread and outside of it.
+     *
+     * @throws IOException If an error occurs while changing scenes in the JavaFX application.
+     */
     private static void dropToMainMenu() throws IOException {
         MainContainer.setInLobbyMenu(true);
         LobbyManager.getCurrentLobby().setGameObject(null);
@@ -607,7 +731,13 @@ public class Utils {
         }
     }
 
-
+    /**
+     * Retrieves the image path for a specific card based on its code.
+     * This method maps card codes to their corresponding image file paths, supporting different card suits.
+     *
+     * @param cardCode The code of the card (e.g., "C2" for Two of Clubs).
+     * @return The file path to the image representing the specified card or null if the suit is unrecognized.
+     */
     public static String getCardImagePath(String cardCode) {
         char suit = cardCode.charAt(0);
 

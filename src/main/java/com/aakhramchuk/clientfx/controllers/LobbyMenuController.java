@@ -57,24 +57,35 @@ public class LobbyMenuController {
 
     private SelectionModel<User> userTableSelection;
 
+    /**
+     * Initializes the controller class.
+     */
     @FXML
     public void initialize() {
+        // Set the screen flags
         MainContainer.setInSelectLobbyMenu(false);
         MainContainer.setInGame(false);
         MainContainer.setInLobbyMenu(true);
         MainContainer.setInGameEndMenu(false);
 
+        // Bind lobby information to the TextArea
         bindLobbyInfoToTextArea(LobbyManager.getCurrentLobby());
 
+        // Set a background image for the BorderPane
         FxUtils.setBackgroundImage(borderPane);
 
+        // Initialize the user table
         initializeTable();
     }
 
+    /**
+     * Initializes the user table.
+     */
     private void initializeTable() {
         userTableSelection = usersTW.getSelectionModel();
         usersTW.setEditable(false);
 
+        // Set up the user table columns
         userIdColumn.setCellValueFactory(cellData ->
                 Bindings.createIntegerBinding(
                         () -> usersTW.getItems().indexOf(cellData.getValue()) + 1,
@@ -91,27 +102,52 @@ public class LobbyMenuController {
         isAdminColumn.setCellValueFactory(cellData -> cellData.getValue().adminProperty());
         isOnlineColumn.setCellValueFactory(cellData -> cellData.getValue().onlineProperty());
 
+        // Enable editing for some columns
         userUsernameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         userNameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         userSurnameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
     }
 
+    /**
+     * Handle the "Start Game" button click event to start the game.
+     *
+     * @param event The ActionEvent triggered by the button click.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void startGameBtnAction(ActionEvent event) throws IOException, InterruptedException {
         GameUtils.startGame();
     }
 
-
+    /**
+     * Handle the "Leave Lobby" button click event to leave the lobby.
+     *
+     * @param event The ActionEvent triggered by the button click.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void leaveLobbyBtnAction(ActionEvent event) throws IOException, InterruptedException {
         ActionUtils.leaveLobby();
     }
 
+    /**
+     * Handle the "Logout" button click event to log out the user.
+     *
+     * @param action The ActionEvent triggered by the button click.
+     * @throws IOException          If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void logoutAction(ActionEvent action) throws IOException, InterruptedException {
         ActionUtils.logout();
     }
 
+    /**
+     * Bind lobby information to the TextArea to display it.
+     * @param lobby The lobby to bind information from.
+     */
     private void bindLobbyInfoToTextArea(Lobby lobby) {
         lobbyInfoTextArea.textProperty().bind(Bindings.createStringBinding(() ->
                         "Lobby [" + lobby.getId() + "]\n" +

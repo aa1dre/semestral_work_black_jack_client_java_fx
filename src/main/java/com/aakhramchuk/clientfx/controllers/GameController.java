@@ -66,23 +66,31 @@ public class GameController {
 
     private SelectionModel<GamePlayer> gamePlayerTableSelection;
 
+    /**
+     * Initialize the Game screen.
+     */
     @FXML
     public void initialize() {
+        // Set various flags to manage screen states
         MainContainer.setInSelectLobbyMenu(false);
         MainContainer.setInLobbyMenu(false);
         MainContainer.setInGameEndMenu(false);
         MainContainer.setInGame(true);
 
+        // Set a background image for the borderPane
         FxUtils.setBackgroundImage(borderPane);
 
+        // Display cards for the current player
         LobbyManager.getCurrentLobby().getGameObject().getPlayers().forEach(player -> {
             if (player.getUsername().equals(MainContainer.getUser().getUsername())) {
                 displayCards(player);
             }
         });
 
+        // Initialize the game player table
         initializeTable();
 
+        // Update the card display when a player's cards change
         LobbyManager.getCurrentLobby().getGameObject().getPlayers().forEach(player -> {
             player.cardsProperty().addListener((observable, oldValue, newValue) -> {
                 if (player.getUsername().equals(MainContainer.getUser().getUsername())) {
@@ -91,9 +99,13 @@ public class GameController {
             });
         });
 
+        // Bind player properties to text fields
         bindPlayerPropertiesToTextFields();
     }
 
+    /**
+     * Bind the current player's card count and card value properties to text fields.
+     */
     private void bindPlayerPropertiesToTextFields() {
         LobbyManager.getCurrentLobby().getGameObject().getPlayers().forEach(player -> {
             if (player.getUsername().equals(MainContainer.getUser().getUsername())) {
@@ -103,10 +115,15 @@ public class GameController {
         });
     }
 
+    /**
+     * Initialize the game player table.
+     */
     private void initializeTable() {
+        // Set up the game player table
         gamePlayerTableSelection = gamePlayersTW.getSelectionModel();
         gamePlayersTW.setEditable(false);
 
+        // Filter out the current player from the list of game players
         ObservableList<GamePlayer> filteredGamePlayers = LobbyManager.getCurrentLobby().getGameObject().getPlayers().filtered(
                 gamePlayer -> !gamePlayer.getUsername().equals(MainContainer.getUser().getUsername())
         );
@@ -119,6 +136,7 @@ public class GameController {
         );
         gamePlayersTW.setItems(filteredGamePlayers);
 
+        // Set up column cell value factories and cell factories
         gamePlayerUsernameColumn.setCellValueFactory(cellData -> cellData.getValue().usernameProperty());
         gamePlayerNameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         gamePlayerSurnameColumn.setCellValueFactory(cellData -> cellData.getValue().surnameProperty());
@@ -126,31 +144,65 @@ public class GameController {
         gamePlayerTurnColumn.setCellValueFactory(cellData -> cellData.getValue().isCurrentPlayerProperty());
         gamePlayerOnlineColumn.setCellValueFactory(cellData -> cellData.getValue().isOnlineProperty());
 
+        // Enable editing for some columns
         gamePlayerUsernameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         gamePlayerNameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         gamePlayerSurnameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
     }
 
+    /**
+     * Handle the logout button click event.
+     *
+     * @param event The ActionEvent triggered by the logout button.
+     * @throws IOException If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void logoutAction(ActionEvent event) throws IOException, InterruptedException {
         ActionUtils.logout();
     }
 
+    /**
+     * Handle the leave lobby button click event.
+     *
+     * @param event The ActionEvent triggered by the leave lobby button.
+     * @throws IOException If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void leaveLobbyAction(ActionEvent event) throws IOException, InterruptedException {
         ActionUtils.leaveLobby();
     }
 
+    /**
+     * Handle the "Take" button click event in the game.
+     *
+     * @param event The ActionEvent triggered by the "Take" button.
+     * @throws IOException If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void takeBtnAction(ActionEvent event) throws IOException, InterruptedException {
         GameUtils.takeAction();
     }
 
+    /**
+     * Handle the "Pass" button click event in the game.
+     *
+     * @param action The ActionEvent triggered by the "Pass" button.
+     * @throws IOException If an I/O error occurs.
+     * @throws InterruptedException If the operation is interrupted.
+     */
     @FXML
     public void passBtnAction(ActionEvent action) throws IOException, InterruptedException {
         GameUtils.passAction();
     }
 
+    /**
+     * Display the cards for a specific player in the game.
+     *
+     * @param player The GamePlayer object representing the player.
+     */
     private void displayCards(GamePlayer player) {
         cardsContainerHbx.getChildren().clear();
 
@@ -176,6 +228,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Calculate the height of the card display based on the number of cards.
+     *
+     * @param cardCount The number of cards to display.
+     * @return The calculated height for displaying the cards.
+     */
     private int calculateCardHeight(int cardCount) {
         final int maxCardHeight = 300;
         final int minCardHeight = 20;
@@ -188,6 +246,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Calculate the spacing between displayed cards based on the number of cards.
+     *
+     * @param cardCount The number of cards to display.
+     * @return The calculated spacing between cards.
+     */
     private int calculateCardSpacing(int cardCount) {
         final int maxSpacing = 15;
         final int minSpacing = 2;
