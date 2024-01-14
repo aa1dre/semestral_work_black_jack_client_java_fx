@@ -107,10 +107,6 @@ public class Lobby {
         usersList.add(user);
     }
 
-    public void removeUser(User user) {
-        Platform.runLater(() -> usersList.remove(user));
-    }
-
     public ObservableList<User> getUsersList() {
         return usersList;
     }

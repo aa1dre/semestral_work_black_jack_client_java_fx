@@ -1,6 +1,7 @@
 package com.aakhramchuk.clientfx.controllers;
 
 import com.aakhramchuk.clientfx.containers.FxContainer;
+import com.aakhramchuk.clientfx.utils.ActionUtils;
 import com.aakhramchuk.clientfx.utils.FxUtils;
 import com.aakhramchuk.clientfx.utils.ServerUtils;
 import com.aakhramchuk.clientfx.utils.Utils;
@@ -47,8 +48,6 @@ public class LoginController {
 
     @FXML
     public void loginButtonAction(ActionEvent action) throws IOException, InterruptedException {
-        String loginOpcode = MainContainer.getConnectionObject().getConfig().getString("message.login_opcode");
-        Configuration config = MainContainer.getConnectionObject().getConfig();
 
         if(loginTf.getText().isEmpty() || loginTf.getText().isBlank()) {
             FxUtils.showEmptyLoginAlert();
@@ -61,29 +60,7 @@ public class LoginController {
         }
 
         MainContainer.setUser(new User(loginTf.getText(), passwordTf.getText()));
-        String sentMessage = Utils.createMessage(config, loginOpcode, MainContainer.getUser().toStringLogin());
-
-        DeserializedMessage deserializedReceivedMessage = Utils.sendMesageAndTakeResponse(loginOpcode, sentMessage);
-
-        if (!deserializedReceivedMessage.isSucess()) {
-            MainContainer.setUser(null);
-
-            Alert dataAlert = FxUtils.createErrorAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.error"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_login_process"),
-                    deserializedReceivedMessage.getMessage());
-            dataAlert.showAndWait();
-        } else {
-            String messageType = Utils.deserializeLoginStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
-            ServerUtils.startSchedulerServices();
-            if ("MENU".equals(messageType)) {
-                FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
-                FxContainer.getCurrentStage().setScene(FxManager.getMainMenuScene());
-            } else if("LOBBY".equals(messageType)) {
-                FxManager.changeCurrentSceneToLobbyScene();
-            } else if ("GAME".equals(messageType)) {
-                FxManager.changeCurrentSceneToGameScene();
-            }
-        }
+        ActionUtils.login(false);
     }
 
     @FXML

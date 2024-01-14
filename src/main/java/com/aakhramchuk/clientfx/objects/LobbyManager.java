@@ -65,6 +65,38 @@ public class LobbyManager {
         currentLobby.setAdminInfo(lobbyInfoToUpdate.getAdminInfo());
         currentLobby.setCurrentPlayers(lobbyInfoToUpdate.getCurrentPlayers());
         currentLobby.updateUsersList(lobbyInfoToUpdate.getUsersList());
+        if (currentLobby.getGameObject() != null) {
+            currentLobby.getGameObject().updatePlayers(lobbyInfoToUpdate.getGameObject().getPlayers(), true);
+        }
     }
+
+    public static void updateCurrentLobbyWithoutUpdateApplicationUser(Lobby lobbyInfoToUpdate) {
+        Lobby currentLobby = LobbyManager.getCurrentLobby();
+        currentLobby.setAdminInfo(lobbyInfoToUpdate.getAdminInfo());
+        currentLobby.setCurrentPlayers(lobbyInfoToUpdate.getCurrentPlayers());
+        currentLobby.updateUsersList(lobbyInfoToUpdate.getUsersList());
+        if (currentLobby.getGameObject() != null) {
+            currentLobby.getGameObject().updatePlayers(lobbyInfoToUpdate.getGameObject().getPlayers(), false);
+        }
+    }
+
+    public static void markUserAsDisconnect(User user) {
+        Lobby currentLobby = LobbyManager.getCurrentLobby();
+
+        if (currentLobby == null) {
+            return;
+        }
+
+        if (currentLobby.getGameObject() == null) {
+            return;
+        }
+
+        currentLobby.getGameObject().getPlayers().forEach(player -> {
+            if (player.getUsername().equals(user.getUsername())) {
+                player.setOnline(false);
+            }
+        });
+    }
+
 }
 

@@ -38,6 +38,7 @@ public class GamePlayer {
         setCards(player.getCards());
         setCardCount(player.getCardCount());
         setCardsValue(player.getCardsValue());
+        setOnline(player.isOnline());
     }
 
     // online property

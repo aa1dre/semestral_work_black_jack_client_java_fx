@@ -47,19 +47,24 @@ public class BlackJackApplication extends Application {
     }
 
     private static void connectToServerAndRunApplication() {
+        logger.debug("Receiving configuration from config.properties");
         Configurations configs = new Configurations();
+        logger.debug("Configuration received successfully");
+
 
         try {
             Configuration config = configs.properties("config.properties");
             String hostname = config.getString("server.hostname");
             int port = config.getInt("server.port");
-
+            logger.debug("Connecting to server: " + hostname + ":" + port + "");
             try (Socket socket = new Socket(hostname, port);
                  PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
                  BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                  Scanner scanner = new Scanner(System.in)) {
 
                 MainContainer.setConnectionObject(new ConnectionObject(socket, writer, reader, scanner, config));
+
+                MainContainer.setConnected(true);
 
                 ServerUtils.startServerListener();
 

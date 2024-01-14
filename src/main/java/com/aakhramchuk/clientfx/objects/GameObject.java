@@ -1,5 +1,6 @@
 package com.aakhramchuk.clientfx.objects;
 
+import com.aakhramchuk.clientfx.containers.MainContainer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -17,10 +18,13 @@ public class GameObject {
         return players;
     }
 
-    public void updatePlayers(List<GamePlayer> players) {
+    public void updatePlayers(List<GamePlayer> players, boolean updateApplicationUser) {
         for (GamePlayer player : this.players) {
             for (GamePlayer playerNew : players) {
                 if (player.getUsername().equals(playerNew.getUsername())) {
+                    if (!updateApplicationUser && player.getUsername().equals(MainContainer.getUser().getUsername())) {
+                        continue;
+                    }
                     player.updatePlayer(playerNew);
                 }
             }

@@ -4,6 +4,7 @@ import com.aakhramchuk.clientfx.containers.MainContainer;
 import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.*;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Utils {
 
@@ -24,6 +26,24 @@ public class Utils {
         return prefix + opcode + length + message;
     }
 
+    public static boolean confirmMessage(ConnectionObject connectionObject, String message) {
+        Configuration config = connectionObject.getConfig();
+        String prefix = config.getString("message.prefix");
+
+        if (!message.startsWith(prefix)) {
+            logger.error("Invalid message prefix");
+        }
+
+
+        int declaredLength = Integer.parseInt(message.substring(prefix.length() + 2, prefix.length() + 6));
+        String payload = message.substring(prefix.length() + 6);
+        if (payload.length() != declaredLength) {
+            logger.error("Invalid message length");
+        }
+
+        return true;
+    }
+
     public static DeserializedMessage confirmAndDeserializeErrorMessage(ConnectionObject connectionObject, String originalOpcode, String message, boolean isPing ) {
         Configuration config = connectionObject.getConfig();
         String prefix = config.getString("message.prefix");
@@ -34,22 +54,25 @@ public class Utils {
         String endGameCommand = connectionObject.getConfig().getString("message.game_end_command");
         String gameLeaveCommand = connectionObject.getConfig().getString("message.game_leave_command");
         String disconnectCommand = connectionObject.getConfig().getString("message.disconnect_command");
+        String disconnectEndCommand = connectionObject.getConfig().getString("message.disconnect_end_command");
 
         if (!message.startsWith(prefix)) {
             logger.error("Invalid message prefix");
+            // TODO: invalid message prefix validate!!!
         }
 
         String responseOpcode = message.substring(prefix.length(), prefix.length() + 2);
         if (!isPing) {
             if (responseOpcode.charAt(0) != '1' || responseOpcode.charAt(1) != originalOpcode.charAt(originalOpcode.length() - 1)) {
                 logger.error("Invalid opcode in response");
-            }
+             } // TODO: opcode not valid validate!!!
         }
 
         int declaredLength = Integer.parseInt(message.substring(prefix.length() + 2, prefix.length() + 6));
         String payload = message.substring(prefix.length() + 6);
         if (payload.length() != declaredLength) {
             logger.error("Invalid message length");
+            // TODO: invalid message length validate!!!
         }
         boolean isSuccess = true;
         boolean isGameMessage = true;
@@ -71,9 +94,15 @@ public class Utils {
         } else if (payload.startsWith(endGameCommand)) {
             deserializedMessage = payload.substring(endGameCommand.length());
             messageType = endGameCommand;
+        } else if (payload.startsWith(disconnectCommand)) {
+            deserializedMessage = payload.substring(disconnectCommand.length());
+            messageType = disconnectCommand;
         } else if (payload.startsWith(gameLeaveCommand)) {
             deserializedMessage = payload.substring(gameLeaveCommand.length());
             messageType = gameLeaveCommand;
+        } else if (payload.startsWith(disconnectEndCommand)) {
+            deserializedMessage = payload.substring(disconnectEndCommand.length());
+            messageType = disconnectEndCommand;
         } else {
             isGameMessage = false;
             isSuccess = payload.charAt(0) == '1';
@@ -422,7 +451,7 @@ public class Utils {
         return -1;
     }
 
-    private static User parseUserInfo(String userInfo) {
+    public static User parseUserInfo(String userInfo) {
         if (userInfo.equals("[]")) {
             return null;
         }
@@ -440,6 +469,8 @@ public class Utils {
         String endGameCommand = connectionObject.getConfig().getString("message.game_end_command");
         String gameLeaveCommand = connectionObject.getConfig().getString("message.game_leave_command");
         String disconnectCommand = connectionObject.getConfig().getString("message.disconnect_command");
+        String disconnectEndCommand = connectionObject.getConfig().getString("message.disconnect_end_command");
+        String gamePrefix = connectionObject.getConfig().getString("message.game_prefix");
 
         DeserializedMessage deserializedReceivedMessage = Utils.confirmAndDeserializeErrorMessage(connectionObject, opcode, message, true);
         if (deserializedReceivedMessage.isSucess()) {
@@ -447,7 +478,11 @@ public class Utils {
                 Utils.parseAndUpdateLobbies(deserializedReceivedMessage.getMessage());
             } else if (MainContainer.isInLobbyMenu() && deserializedReceivedMessage.getMessage().startsWith(Constants.LOBBY_PREFIX_VALE)) {
                 String messageToParse = deserializedReceivedMessage.getMessage().substring(Constants.LOBBY_PREFIX_VALE.length());
-                LobbyManager.updateCurrentLobby(Utils.parseLobby(messageToParse, true, false));
+                if (Platform.isFxApplicationThread()) {
+                    LobbyManager.updateCurrentLobby(Utils.parseLobby(messageToParse, true, false));
+                } else {
+                    Platform.runLater(() -> LobbyManager.updateCurrentLobby(Utils.parseLobby(messageToParse, true, false)));
+                }
             } else if (deserializedReceivedMessage.isGameMessage()) {
                     if (MainContainer.isInGameEndMenu()) {
                         MainContainer.setInGameEndMenu(false);
@@ -462,10 +497,47 @@ public class Utils {
                                     }
                                     if (player.getUsername().equals(deserializedReceivedMessage.getMessage().substring(2))) {
                                         player.setIsCurrentPlayer(true);
+                                        if (player.getUsername().equals(MainContainer.getUser().getUsername())) {
+                                            if (Platform.isFxApplicationThread()) {
+                                                FxUtils.showTurnAlert();
+                                            } else {
+                                                Platform.runLater(FxUtils::showTurnAlert);
+                                            }
+                                        }
                                     }
                                 });
                             }
-                        } else if (deserializedReceivedMessage.getMessageType().equals(gameLeaveCommand) || deserializedReceivedMessage.getMessageType().equals(disconnectCommand)) {
+                        } else if (deserializedReceivedMessage.getMessageType().equals(disconnectCommand)) {
+                            if (Platform.isFxApplicationThread()) {
+                                User disconnectedUser = Utils.parseUserInfo(deserializedReceivedMessage.getMessage().substring(1));
+                                if (disconnectedUser != null) {
+                                    LobbyManager.markUserAsDisconnect(disconnectedUser);
+                                    FxUtils.showDisconnectAlert(disconnectedUser);
+                                }
+                            } else {
+                                Platform.runLater(() -> {
+                                    User disconnectedUser = Utils.parseUserInfo(deserializedReceivedMessage.getMessage().substring(1));
+                                    if (disconnectedUser != null) {
+                                        LobbyManager.markUserAsDisconnect(disconnectedUser);
+                                        FxUtils.showDisconnectAlert(disconnectedUser);
+                                    }
+                                });
+                            }
+                        } else if (deserializedReceivedMessage.getMessageType().equals(gameLeaveCommand) || deserializedReceivedMessage.getMessageType().equals(disconnectEndCommand)) {
+                            User disconnectedUser = Utils.parseUserInfo(deserializedReceivedMessage.getMessage().substring(1));
+                            if (deserializedReceivedMessage.getMessageType().equals(disconnectEndCommand) && disconnectedUser != null) {
+                                if (Platform.isFxApplicationThread()) {
+                                    FxUtils.showDisconnectEndAlert(disconnectedUser);
+                                } else {
+                                    Platform.runLater(() -> FxUtils.showDisconnectEndAlert(disconnectedUser));
+                                }
+                            } else if (disconnectedUser != null) {
+                                if (Platform.isFxApplicationThread()) {
+                                    FxUtils.showGameLeaveAlert(disconnectedUser);
+                                } else {
+                                    Platform.runLater(() -> FxUtils.showGameLeaveAlert(disconnectedUser));
+                                }
+                            }
                             MainContainer.setInGame(false);
                             dropToMainMenu();
                         }
@@ -496,10 +568,10 @@ public class Utils {
                                     }
                                 } else {
                                     if (Platform.isFxApplicationThread()) {
-                                        LobbyManager.getCurrentLobby().getGameObject().updatePlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                                        LobbyManager.getCurrentLobby().getGameObject().updatePlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)), true);
                                     } else {
                                         Platform.runLater(() -> {
-                                            LobbyManager.getCurrentLobby().getGameObject().updatePlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)));
+                                            LobbyManager.getCurrentLobby().getGameObject().updatePlayers(Utils.parseStartGamePlayers(deserializedReceivedMessage.getMessage().substring(1)), true);
                                         });
                                     }
                                 }
@@ -507,6 +579,13 @@ public class Utils {
                         } else if (deserializedReceivedMessage.getMessageType().equals(endGameCommand)) {
                             GameUtils.endGame(deserializedReceivedMessage.getMessage());
                         }
+                    }
+                } else if (deserializedReceivedMessage.getMessage().startsWith(gamePrefix)) {
+                    String messageToParse = deserializedReceivedMessage.getMessage().substring(gamePrefix.length());
+                    if (Platform.isFxApplicationThread()) {
+                        LobbyManager.updateCurrentLobbyWithoutUpdateApplicationUser(Utils.parseLobby(messageToParse, true, true));
+                    } else {
+                        Platform.runLater(() -> LobbyManager.updateCurrentLobbyWithoutUpdateApplicationUser(Utils.parseLobby(messageToParse, true, true)));
                     }
                 }
             }

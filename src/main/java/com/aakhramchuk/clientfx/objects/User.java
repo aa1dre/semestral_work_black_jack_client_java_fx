@@ -21,7 +21,7 @@ public class User {
 
     @Override
     public String toString() {
-        return username + " - " + name + " " + surname;
+        return username.get() + " - " + name.get() + " " + surname.get();
     }
 
     public User(String username, String password, String name, String surname) {

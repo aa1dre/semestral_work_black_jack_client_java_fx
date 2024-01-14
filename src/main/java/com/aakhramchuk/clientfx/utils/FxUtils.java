@@ -2,6 +2,7 @@ package com.aakhramchuk.clientfx.utils;
 
 import com.aakhramchuk.clientfx.containers.FxContainer;
 import com.aakhramchuk.clientfx.containers.MainContainer;
+import com.aakhramchuk.clientfx.objects.User;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -38,6 +39,41 @@ public class FxUtils {
         Alert dataAlert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
                 MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_password_field"),
                 MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.error_in_password_field"));
+        dataAlert.showAndWait();
+    }
+
+    public static void showDisconnectAlert(User dissconectedUser) {
+        Alert dataAlert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.player_disconnected"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.player_disconnected") + " " + dissconectedUser.toString());
+        dataAlert.showAndWait();
+    }
+
+    public static void showTurnAlert() {
+        Alert dataAlert = FxUtils.createInformationAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.information"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.your_turn"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.your_turn"));
+        dataAlert.showAndWait();
+    }
+
+    public static void showDisconnectEndAlert(User dissconectedUser) {
+        Alert dataAlert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.player_disconnected_game_end"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.player_disconnected_game_end") + " " + dissconectedUser.toString());
+        dataAlert.showAndWait();
+    }
+
+    public static void youLoggedInAuthomaticlyDueToInternetConnectionIssue(User automaticallyAuthenticatedUser) {
+        Alert dataAlert = FxUtils.createInformationAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.information"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.logged_in_automaticly"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.logged_in_automaticly") + " " + automaticallyAuthenticatedUser.toString());
+        dataAlert.showAndWait();
+    }
+
+    public static void showGameLeaveAlert(User dissconectedUser) {
+        Alert dataAlert = FxUtils.createWarningAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.warning"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.player_leave_game_end"),
+                MainContainer.getConnectionObject().getConfig().getString("text.alert_content_text.player_leave_game_end") + " " + dissconectedUser.toString());
         dataAlert.showAndWait();
     }
 

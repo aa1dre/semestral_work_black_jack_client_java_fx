@@ -40,6 +40,38 @@ public class ActionUtils {
 
     }
 
+    public static void login(boolean isReconectingLogin) throws IOException, InterruptedException {
+        String loginOpcode = MainContainer.getConnectionObject().getConfig().getString("message.login_opcode");
+        Configuration config = MainContainer.getConnectionObject().getConfig();
+
+        String sentMessage = Utils.createMessage(config, loginOpcode, MainContainer.getUser().toStringLogin());
+
+        DeserializedMessage deserializedReceivedMessage = Utils.sendMesageAndTakeResponse(loginOpcode, sentMessage);
+        if (!deserializedReceivedMessage.isSucess()) {
+            if (!isReconectingLogin) {
+                MainContainer.setUser(null);
+            }
+            Alert dataAlert = FxUtils.createErrorAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.error"),
+                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_login_process"),
+                    deserializedReceivedMessage.getMessage());
+            dataAlert.showAndWait();
+        } else {
+            String messageType = Utils.deserializeLoginStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
+            ServerUtils.startSchedulerServices();
+            if (isReconectingLogin) {
+                FxUtils.youLoggedInAuthomaticlyDueToInternetConnectionIssue(MainContainer.getUser());
+            }
+            if ("MENU".equals(messageType)) {
+                FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
+                FxContainer.getCurrentStage().setScene(FxManager.getMainMenuScene());
+            } else if("LOBBY".equals(messageType)) {
+                FxManager.changeCurrentSceneToLobbyScene();
+            } else if ("GAME".equals(messageType)) {
+                FxManager.changeCurrentSceneToGameScene();
+            }
+        }
+    }
+
     public static boolean createLobby(String lobbyName, int lobbyMaxCountOfPlayers, boolean hasPassword, String password) throws InterruptedException {
         ConnectionObject connectionObject = MainContainer.getConnectionObject();
         String lobbyJoinOpcode = connectionObject.getConfig().getString("message.lobby_create_opcode");
@@ -76,10 +108,17 @@ public class ActionUtils {
         DeserializedMessage deserializedReceivedMessage = Utils.sendMesageAndTakeResponse(lobbyActionOpcode, sentMessage);
 
         if (!deserializedReceivedMessage.isSucess()) {
+            if (!isJoin) {
             Alert alert = FxUtils.createErrorAlert(config.getString("text.alert_title.error"),
                     config.getString("text.alert_header_text.error_in_lobby_delete_process"),
                     deserializedReceivedMessage.getMessage());
             alert.showAndWait();
+            } else {
+                Alert alert = FxUtils.createErrorAlert(config.getString("text.alert_title.error"),
+                        config.getString("text.alert_header_text.error_in_lobby_join_process"),
+                        deserializedReceivedMessage.getMessage());
+                alert.showAndWait();
+            }
         } else {
             if (isJoin) {
                 selectedLobby = Utils.parseLobby(deserializedReceivedMessage.getMessage().substring(LOBBY_PREFIX_VALE.length()), true, false);
@@ -114,8 +153,7 @@ public class ActionUtils {
             FxUtils.showSuccessLobbyLeaveAlert();
             LobbyManager.setCurrentLobby(null);
             Utils.deserializeStateAndUpdateLobbiesList(config, deserializedReceivedMessage);
-            FxContainer.setCurrentScene(FxContainer.getCurrentStage().getScene());
-            FxContainer.getCurrentStage().setScene(FxManager.getMainMenuScene());
+            FxManager.changeCurrentSceneToMainMenuScene();
         }
     }
 
