@@ -129,7 +129,9 @@ public class LobbyMenuController {
      */
     @FXML
     public void leaveLobbyBtnAction(ActionEvent event) throws IOException, InterruptedException {
-        ActionUtils.leaveLobby();
+        if (MainContainer.isConnected()) {
+            ActionUtils.leaveLobby();
+        }
     }
 
     /**
@@ -141,7 +143,9 @@ public class LobbyMenuController {
      */
     @FXML
     public void logoutAction(ActionEvent action) throws IOException, InterruptedException {
-        ActionUtils.logout();
+        if (MainContainer.isConnected()) {
+            ActionUtils.logout();
+        }
     }
 
     /**

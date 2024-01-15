@@ -1,5 +1,6 @@
 package com.aakhramchuk.clientfx.controllers;
 
+import com.aakhramchuk.clientfx.containers.MainContainer;
 import com.aakhramchuk.clientfx.objects.Lobby;
 import com.aakhramchuk.clientfx.utils.ActionUtils;
 import com.aakhramchuk.clientfx.utils.FxUtils;
@@ -52,7 +53,9 @@ public class EnterPasswordController {
      */
     @FXML
     public void cancelButtonAction(ActionEvent event) throws IOException {
-        FxUtils.closeCurrentModalWindowIfExist();
+        if (MainContainer.isConnected()) {
+            FxUtils.closeCurrentModalWindowIfExist();
+        }
     }
 
     /**
@@ -69,10 +72,12 @@ public class EnterPasswordController {
             return;
         }
 
-        if (isJoin) {
-            ActionUtils.actionLobby(JOIN_LOBBY_OPCODE_CONFIG_VALUE, lobby, passwordTf.getText());
-        } else {
-            ActionUtils.actionLobby(DELETE_LOBBY_OPCODE_CONFIG_VALUE, lobby, passwordTf.getText());
+        if (MainContainer.isConnected()) {
+            if (isJoin) {
+                ActionUtils.actionLobby(JOIN_LOBBY_OPCODE_CONFIG_VALUE, lobby, passwordTf.getText());
+            } else {
+                ActionUtils.actionLobby(DELETE_LOBBY_OPCODE_CONFIG_VALUE, lobby, passwordTf.getText());
+            }
         }
 
     }

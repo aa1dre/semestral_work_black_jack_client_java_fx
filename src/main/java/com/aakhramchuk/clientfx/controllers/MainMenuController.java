@@ -119,15 +119,17 @@ public class MainMenuController {
             return;
         }
 
-        // Handle joining a lobby with or without a password
-        if (lobbyTableSelection.getSelectedItem().getHasPassword()) {
-            FxManager.createEnterPasswordModalWindow(lobbyTableSelection.getSelectedItem(), true);
-        } else {
-            ActionUtils.actionLobby(JOIN_LOBBY_OPCODE_CONFIG_VALUE, lobbyTableSelection.getSelectedItem(), null);
-        }
+        if (MainContainer.isConnected()) {
+            // Handle joining a lobby with or without a password
+            if (lobbyTableSelection.getSelectedItem().getHasPassword()) {
+                FxManager.createEnterPasswordModalWindow(lobbyTableSelection.getSelectedItem(), true);
+            } else {
+                ActionUtils.actionLobby(JOIN_LOBBY_OPCODE_CONFIG_VALUE, lobbyTableSelection.getSelectedItem(), null);
+            }
 
-        // Close the current modal window if it exists.
-        FxUtils.closeCurrentModalWindowIfExist();
+            // Close the current modal window if it exists.
+            FxUtils.closeCurrentModalWindowIfExist();
+        }
     }
 
     /**
@@ -139,7 +141,9 @@ public class MainMenuController {
      */
     @FXML
     public void createLobbyBtnAction(ActionEvent event) throws IOException {
-        FxManager.createLobbyCreationModalWindow();
+        if (MainContainer.isConnected()) {
+            FxManager.createLobbyCreationModalWindow();
+        }
     }
 
     /**
@@ -158,15 +162,17 @@ public class MainMenuController {
             return;
         }
 
-        // Handle deleting a lobby with or without a password.
-        if (lobbyTableSelection.getSelectedItem().getHasPassword()) {
-            FxManager.createEnterPasswordModalWindow(lobbyTableSelection.getSelectedItem(), false);
-        } else {
-            ActionUtils.actionLobby(DELETE_LOBBY_OPCODE_CONFIG_VALUE, lobbyTableSelection.getSelectedItem(), null);
-        }
+        if (MainContainer.isConnected()) {
+            // Handle deleting a lobby with or without a password.
+            if (lobbyTableSelection.getSelectedItem().getHasPassword()) {
+                FxManager.createEnterPasswordModalWindow(lobbyTableSelection.getSelectedItem(), false);
+            } else {
+                ActionUtils.actionLobby(DELETE_LOBBY_OPCODE_CONFIG_VALUE, lobbyTableSelection.getSelectedItem(), null);
+            }
 
-        // Close the current modal window if it exists.
-        FxUtils.closeCurrentModalWindowIfExist();
+            // Close the current modal window if it exists.
+            FxUtils.closeCurrentModalWindowIfExist();
+        }
     }
 
     /**
@@ -179,7 +185,9 @@ public class MainMenuController {
      */
     @FXML
     public void logoutAction(ActionEvent action) throws IOException, InterruptedException {
-        ActionUtils.logout();
+        if (MainContainer.isConnected()) {
+            ActionUtils.logout();
+        }
     }
 
     /**

@@ -87,6 +87,8 @@ public class BlackJackApplication extends Application {
 
                 MainContainer.setConnectionObject(new ConnectionObject(socket, writer, reader, scanner, config));
 
+                ServerUtils.tryPingServer();
+
                 MainContainer.setConnected(true);
 
                 ServerUtils.startServerListener();
@@ -103,6 +105,5 @@ public class BlackJackApplication extends Application {
         }
 
     }
-
 
 }

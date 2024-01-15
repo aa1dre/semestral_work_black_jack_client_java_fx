@@ -4,7 +4,6 @@ import com.aakhramchuk.clientfx.containers.MainContainer;
 import com.aakhramchuk.clientfx.managers.FxManager;
 import com.aakhramchuk.clientfx.objects.*;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import static com.aakhramchuk.clientfx.objects.Constants.MENU_PREFIX_VALUE;
 
@@ -39,22 +37,23 @@ public class Utils {
     /**
      * Confirms the validity of a message based on its prefix and length.
      *
-     * @param connectionObject The connection object containing configuration details.
      * @param message The message to be validated.
      * @return true if the message is valid, false otherwise.
      */
-    public static boolean confirmMessage(ConnectionObject connectionObject, String message) {
-        Configuration config = connectionObject.getConfig();
+    public static boolean confirmMessage(String message) {
+        Configuration config = MainContainer.getConnectionObject().getConfig();
         String prefix = config.getString("message.prefix");
 
         if (!message.startsWith(prefix)) {
             logger.error("Invalid message prefix");
+            return false;
         }
 
         int declaredLength = Integer.parseInt(message.substring(prefix.length() + 2, prefix.length() + 6));
         String payload = message.substring(prefix.length() + 6);
         if (payload.length() != declaredLength) {
             logger.error("Invalid message length");
+            return false;
         }
 
         return true;

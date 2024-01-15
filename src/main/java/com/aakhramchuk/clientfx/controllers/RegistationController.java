@@ -91,19 +91,21 @@ public class RegistationController {
         // Create a new User object with registration data.
         User user = new User(loginTf.getText(), passwordTf.getText(), nameTf.getText(), surnameTf.getText());
 
-        // Create and send a registration message to the server, handling the response.
-        String sentMessage = Utils.createMessage(config, registrationOpcode, user.toStringRegistration());
-        DeserializedMessage deserializedReceivedMessage = Utils.sendMesageAndTakeResponse(registrationOpcode, sentMessage);
+        if (MainContainer.isConnected()) {
+            // Create and send a registration message to the server, handling the response.
+            String sentMessage = Utils.createMessage(config, registrationOpcode, user.toStringRegistration());
+            DeserializedMessage deserializedReceivedMessage = Utils.sendMesageAndTakeResponse(registrationOpcode, sentMessage);
 
-        // Show an error alert if registration fails, or a success alert if it's successful.
-        if (!deserializedReceivedMessage.isSucess()) {
-            Alert alert = FxUtils.createErrorAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.error"),
-                    MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_registration_process"),
-                    deserializedReceivedMessage.getMessage());
-            alert.showAndWait();
-        } else {
-            FxUtils.showSuccessRegistrationAlert();
-            FxUtils.closeCurrentModalWindowIfExist();
+            // Show an error alert if registration fails, or a success alert if it's successful.
+            if (!deserializedReceivedMessage.isSucess()) {
+                Alert alert = FxUtils.createErrorAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.error"),
+                        MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_registration_process"),
+                        deserializedReceivedMessage.getMessage());
+                alert.showAndWait();
+            } else {
+                FxUtils.showSuccessRegistrationAlert();
+                FxUtils.closeCurrentModalWindowIfExist();
+            }
         }
     }
 

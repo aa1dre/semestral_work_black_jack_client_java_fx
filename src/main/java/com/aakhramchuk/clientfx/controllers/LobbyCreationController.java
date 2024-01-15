@@ -76,9 +76,10 @@ public class LobbyCreationController {
             }
         }
 
-        // Create a lobby with specified parameters and close the modal window if successful
-        if (ActionUtils.createLobby(nameTf.getText(), Integer.parseInt(maxCountOfPlayersTf.getText()), passwordChbx.isSelected(), passwordChbx.isSelected() ? passwordTf.getText() : null)) {
-            FxUtils.closeCurrentModalWindowIfExist();
+        if (MainContainer.isConnected()) {
+            if (ActionUtils.createLobby(nameTf.getText(), Integer.parseInt(maxCountOfPlayersTf.getText()), passwordChbx.isSelected(), passwordChbx.isSelected() ? passwordTf.getText() : null)) {
+                FxUtils.closeCurrentModalWindowIfExist();
+            }
         }
 
     }

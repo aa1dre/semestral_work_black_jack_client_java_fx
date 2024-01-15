@@ -71,8 +71,10 @@ public class LoginController {
             return;
         }
 
-        MainContainer.setUser(new User(loginTf.getText(), passwordTf.getText()));
-        ActionUtils.login(false);
+        if (MainContainer.isConnected()) {
+            MainContainer.setUser(new User(loginTf.getText(), passwordTf.getText()));
+            ActionUtils.login(false);
+        }
     }
 
     /**

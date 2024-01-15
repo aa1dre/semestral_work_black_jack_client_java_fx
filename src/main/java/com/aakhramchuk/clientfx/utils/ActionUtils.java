@@ -69,7 +69,7 @@ public class ActionUtils {
         // Handle the response
         if (!deserializedReceivedMessage.isSucess()) {
             MainContainer.setUser(null);
-            // Show error alert
+            // Show error alertaa
             Alert dataAlert = FxUtils.createErrorAlert(MainContainer.getConnectionObject().getConfig().getString("text.alert_title.error"),
                     MainContainer.getConnectionObject().getConfig().getString("text.alert_header_text.error_in_login_process"),
                     deserializedReceivedMessage.getMessage());

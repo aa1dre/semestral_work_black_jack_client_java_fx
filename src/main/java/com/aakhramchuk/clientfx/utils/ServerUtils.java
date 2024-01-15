@@ -20,7 +20,6 @@ import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerUtils {
 
@@ -113,7 +112,7 @@ public class ServerUtils {
             schedulerPong.scheduleAtFixedRate(() -> {
                 long currentTime = System.currentTimeMillis();
 
-                if ((currentTime - MainContainer.getLastPingResponseTime()) > 10000 && MainContainer.isConnected()) {
+                if ((currentTime - MainContainer.getLastPingResponseTime()) > 10000) {
                     logger.warn(currentTime - MainContainer.getLastPingResponseTime());
                     logger.warn(currentTime);
                     logger.warn(MainContainer.getLastPingResponseTime());
@@ -134,7 +133,7 @@ public class ServerUtils {
      * This method manages the reconnection logic including stopping existing connections, clearing queues, and re-establishing new connections.
      * @throws InterruptedException If the thread is interrupted while sleeping between reconnect attempts.
      */
-    private static void attemptReconnect() throws InterruptedException {
+    public static void attemptReconnect() throws InterruptedException {
         int maxReconnectAttempts = MainContainer.getConnectionObject().getConfig().getInt("server.reconnect_attempts");
         for (int attempt = 1; attempt <= maxReconnectAttempts; attempt++) {
             try {
@@ -183,9 +182,23 @@ public class ServerUtils {
                         startProcessingOutgoingMessages();
                         startServerListener();
                         logger.info("Reconnected to the server (Attempt " + attempt + ")");
-                        handleLoginAttempt(attempt);
-                        // Stop the ping response check service and restart it in login attempt
-                        stopPongService();
+                        MainContainer.setAwaitingResponse(false);
+                        Platform.runLater(FxUtils::closeCurrentModalWindowIfExist);
+                        if (MainContainer.getUser() != null && attempt == 1) {
+                            handleLoginAttempt(attempt);
+                            // Stop the ping response check service and restart it in login attempt
+                            stopPongService();
+                        } else {
+                            MainContainer.setUser(null);
+                            stopPongService();
+                            Platform.runLater(() -> {
+                                try {
+                                    FxManager.changeCurrentSceneToLoginScene();
+                                } catch (IOException e) {
+                                    logger.error("Error while attempting to return to login scene.");
+                                }
+                            });
+                        }
                         break;
                     } else {
                         // No pong response from server, connection failed
@@ -207,6 +220,42 @@ public class ServerUtils {
                 handleFailedConnection(attempt, maxReconnectAttempts);
                 Thread.sleep(5000);
             }
+        }
+    }
+
+    /**
+     * Handles the login attempt after a successful reconnection.
+     * @throws InterruptedException If the thread is interrupted while sleeping between login attempts.
+     * @throws IOException If an I/O error occurs while sending the login message.
+     */
+    public static void tryPingServer() throws InterruptedException, IOException {
+        try {
+
+            String pingOpcode = MainContainer.getConnectionObject().getConfig().getString("message.ping_opcode");
+            String pingCommand = MainContainer.getConnectionObject().getConfig().getString("message.ping_command");
+            String pongResponse = MainContainer.getConnectionObject().getConfig().getString("message.pong_response");
+            Configuration config = MainContainer.getConnectionObject().getConfig();
+            String pingMessage = Utils.createMessage(config, pingOpcode, pingCommand);
+
+            logger.info("Sending validate ping to server : " + pingMessage);
+
+            Thread.sleep(250);
+            MainContainer.getConnectionObject().getWriter().print(pingMessage);
+            MainContainer.getConnectionObject().getWriter().flush();
+            Thread.sleep(250);
+
+            String response = MainContainer.getConnectionObject().getReader().readLine();
+            if (response == null || !Utils.confirmMessage(response) || !response.equals(pongResponse)) {
+                MainContainer.setConnected(false);
+                logger.error("No validate pong response from server, connection failed stopping program.");
+                BlackJackApplication.closeApplication();
+            } else {
+                logger.info("Validate pong response received from server, connection validated.");
+            }
+        } catch (IOException e) {
+            MainContainer.setConnected(false);
+            logger.error("Server is not reachable stopping program.");
+            BlackJackApplication.closeApplication();
         }
     }
 
@@ -259,6 +308,7 @@ public class ServerUtils {
                         }
 
                         currentConnection.getSocket().close();
+                        MainContainer.setConnected(false);
                         logger.info("Connection successfully closed.");
                     } else {
                         logger.info("Socket is already closed.");
@@ -371,6 +421,10 @@ public class ServerUtils {
         try {
             String messageFromServer;
             while (!serverListenerThread.isInterrupted() && (messageFromServer = MainContainer.getConnectionObject().getReader().readLine()) != null) {
+                if (!Utils.confirmMessage(messageFromServer)) {
+                    logger.error("Message from server is not confirmed. Closing the application.");
+                    break;
+                }
                 logger.info("RECEIVED PING: " + messageFromServer);
                 if (MainContainer.isAwaitingResponse()) {
                     MainContainer.getIncomingMessageQueue().put(messageFromServer);
@@ -390,6 +444,9 @@ public class ServerUtils {
                     }
                 }
             }
+            closeCurrentConnection();
+            logger.warn("Starting reconnection process...");
+            startPingResponseCheck();
         } catch (IOException e) {
             if (MainContainer.isConnected()) {
                 logger.error("Error reading from server: ", e);

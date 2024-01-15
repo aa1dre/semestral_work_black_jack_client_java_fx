@@ -159,7 +159,9 @@ public class GameController {
      */
     @FXML
     public void logoutAction(ActionEvent event) throws IOException, InterruptedException {
-        ActionUtils.logout();
+        if (MainContainer.isConnected()) {
+            ActionUtils.logout();
+        }
     }
 
     /**
@@ -171,7 +173,9 @@ public class GameController {
      */
     @FXML
     public void leaveLobbyAction(ActionEvent event) throws IOException, InterruptedException {
-        ActionUtils.leaveLobby();
+        if (MainContainer.isConnected()) {
+            ActionUtils.leaveLobby();
+        }
     }
 
     /**
@@ -183,7 +187,9 @@ public class GameController {
      */
     @FXML
     public void takeBtnAction(ActionEvent event) throws IOException, InterruptedException {
-        GameUtils.takeAction();
+        if (MainContainer.isConnected()) {
+            GameUtils.takeAction();
+        }
     }
 
     /**
@@ -195,7 +201,9 @@ public class GameController {
      */
     @FXML
     public void passBtnAction(ActionEvent action) throws IOException, InterruptedException {
-        GameUtils.passAction();
+        if (MainContainer.isConnected()) {
+            GameUtils.passAction();
+        }
     }
 
     /**
